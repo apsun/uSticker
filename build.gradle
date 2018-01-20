@@ -1,0 +1,54 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.3.3'
+        classpath 'com.google.gms:google-services:3.1.1'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.20'
+
+    }
+}
+
+repositories {
+    jcenter()
+    google()
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+
+dependencies {
+    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.2.20'
+    compile 'com.google.firebase:firebase-core:11.8.0'
+    compile 'com.google.firebase:firebase-appindexing:11.8.0'
+}
+
+apply plugin: 'com.google.gms.google-services'
+
+
+android {
+    compileSdkVersion 27
+    buildToolsVersion '27.0.3'
+
+    defaultConfig {
+        versionCode 1
+        versionName '1.0'
+        minSdkVersion 25
+        targetSdkVersion 27
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDir 'src'
+            res.srcDir 'res'
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}

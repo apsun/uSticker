@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">uSticker</string>
+    <string name="help_text">uSticker lets you use images from your
+        external storage as stickers in Gboard. Just copy your images to
+        <u><b>/sdcard/Pictures/Stickers/</b></u>, then press the refresh
+        button below and they will show up in the Gboard sticker list.\n
+
+        \nHave too many stickers to scroll through? Create sub-folders
+        inside the stickers folder, and we\'ll generate a new sticker tab
+        for each in Gboard.\n
+
+        \nMade by <a href="https://twitter.com/crossbowffs">Andrew Sun</a></string>
+    <string name="refresh_stickers">Refresh stickers</string>
+    <string name="refreshing_in_progress">Refreshing in progress…</string>
+</resources>
