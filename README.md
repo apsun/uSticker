@@ -36,4 +36,3 @@ not go out of my way to support an app I do not use.
 ### How can I support this project?
 
 By using it :-)
-

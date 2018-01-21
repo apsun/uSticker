@@ -31,6 +31,6 @@
     <string name="refresh_failed">Refresh failed</string>
     <string name="change_storage_location">Change storage location</string>
     <string name="storage_permissions_required">External storage permissions required</string>
-    <string name="invalid_sticker_dir">"Invalid sticker directory"</string>
+    <string name="invalid_sticker_dir">Invalid sticker directory</string>
     <string name="stacktrace_copied">Stacktrace copied to clipboard</string>
 </resources>
