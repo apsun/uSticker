@@ -4,17 +4,21 @@ import android.content.ContentProvider
 import android.content.ContentValues
 import android.net.Uri
 import android.os.ParcelFileDescriptor
-import android.util.Log
 import java.io.FileNotFoundException
 
+/**
+ * Provides sticker files to the Firebase indexing service.
+ * Only supports reading files via openFile().
+ */
 class StickerProvider : ContentProvider() {
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {
         val path = uri.path ?: return null
-        Log.e("T", "trying to open $path")
-        val file = StickerManager.getStickerFile(path) ?: return null
+        Klog.i("Requesting sticker: $path")
+        val file = StickerManager.getStickerFile(context, path) ?: return null
         return try {
             ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
         } catch (e: FileNotFoundException) {
+            Klog.e("Could not find sticker: $path", e)
             null
         }
     }

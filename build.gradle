@@ -38,6 +38,7 @@ android {
         versionName '1.0'
         minSdkVersion 25
         targetSdkVersion 27
+        buildConfigField("String", "LOG_TAG", "\"uSticker\"")
     }
 
     sourceSets {
@@ -45,6 +46,15 @@ android {
             manifest.srcFile 'AndroidManifest.xml'
             java.srcDir 'src'
             res.srcDir 'res'
+        }
+    }
+    buildTypes {
+        debug {
+            buildConfigField("int", "LOG_LEVEL", "2")
+        }
+
+        release {
+            buildConfigField("int", "LOG_LEVEL", "4")
         }
     }
 

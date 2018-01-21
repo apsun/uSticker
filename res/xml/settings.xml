@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/actions">
+        <Preference
+            android:key="pref_refresh_index"
+            android:title="@string/refresh_sticker_index"
+            android:summary="@string/refresh_sticker_index_summary"/>
+        <com.crossbowffs.usticker.AutoEditTextPreference
+            android:key="pref_sticker_dir"
+            android:title="@string/change_storage_location"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/about">
+        <Preference
+            android:key="pref_about_help"
+            android:title="@string/help"
+            android:summary="@string/help_summary"/>
+        <Preference
+            android:key="pref_about_credits"
+            android:title="@string/credits"
+            android:summary="@string/credits_summary"/>
+        <Preference
+            android:key="pref_about_github"
+            android:title="@string/github"
+            android:summary="@string/github_summary"/>
+        <Preference
+            android:key="pref_about_version"
+            android:title="@string/version"/>
+    </PreferenceCategory>
+</PreferenceScreen>

@@ -1,16 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">uSticker</string>
-    <string name="help_text">uSticker lets you use images from your
-        external storage as stickers in Gboard. Just copy your images to
-        <u><b>/sdcard/Pictures/Stickers/</b></u>, then press the refresh
-        button below and they will show up in the Gboard sticker list.\n
+    <string name="ok">OK</string>
+    <string name="got_it">Got it!</string>
+    <string name="actions">Actions</string>
+    <string name="about">About</string>
+    <string name="close">Close</string>
+    <string name="copy">Copy</string>
+    <string name="help">Help</string>
+    <string name="credits">Credits</string>
+    <string name="github">GitHub</string>
+    <string name="version">Version</string>
+    <string name="help_summary">View app usage instructions</string>
+    <string name="help_text">Copy your images to the SD card in the
+        configured directory, then press the refresh sticker index button.
+        Your images will show up in the Gboard sticker list.\n
 
-        \nHave too many stickers to scroll through? Create sub-folders
-        inside the stickers folder, and we\'ll generate a new sticker tab
-        for each in Gboard.\n
+        \nHave too many stickers to scroll through? Put your stickers
+        in sub-directories, and we\'ll generate a new sticker tab for each.\n
 
-        \nMade by <a href="https://twitter.com/crossbowffs">Andrew Sun</a></string>
-    <string name="refresh_stickers">Refresh stickers</string>
-    <string name="refreshing_in_progress">Refreshing in progress…</string>
+        \nOnly PNG, JPG, GIF, and BMP files are supported. Any files or
+        directories with a name starting with . are ignored.</string>
+    <string name="credits_summary">Andrew Sun (@crossbowffs)</string>
+    <string name="github_summary">github.com/apsun/uSticker</string>
+    <string name="refresh_sticker_index">Refresh sticker index</string>
+    <string name="refresh_sticker_index_summary">Press after adding stickers or changing settings</string>
+    <string name="refreshing_sticker_index">Refreshing sticker index…</string>
+    <string name="refresh_success_toast">Sticker index successfully refreshed</string>
+    <string name="refresh_failure_toast">Failed to refresh sticker index</string>
+    <string name="refresh_failed">Refresh failed</string>
+    <string name="change_storage_location">Change storage location</string>
+    <string name="storage_permissions_required">External storage permissions required</string>
+    <string name="invalid_sticker_dir">"Invalid sticker directory"</string>
+    <string name="stacktrace_copied">Stacktrace copied to clipboard</string>
 </resources>

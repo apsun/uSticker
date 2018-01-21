@@ -1,107 +1,191 @@
 package com.crossbowffs.usticker
 
+import android.content.Context
 import android.os.Environment
+import android.preference.PreferenceManager
 import com.google.firebase.appindexing.FirebaseAppIndex
-import com.google.firebase.appindexing.Indexable
 import com.google.firebase.appindexing.builders.Indexables
-import com.google.firebase.appindexing.builders.StickerBuilder
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.IOException
 
-private const val PROVIDER_AUTHORITY = BuildConfig.APPLICATION_ID + ".provider"
-private const val STICKER_PATH = "Pictures/Stickers/"
-
+/**
+ * Sticker "manager" - responsible for finding and loading
+ * sticker files from the filesystem.
+ */
 object StickerManager {
-    private val baseDir = File(Environment.getExternalStorageDirectory(), STICKER_PATH).canonicalFile
+    private const val PROVIDER_AUTHORITY = BuildConfig.APPLICATION_ID + ".provider"
+    private const val DEFAULT_STICKER_DIR = "Pictures/Stickers/"
+    private val STICKER_EXTENSIONS = arrayOf("jpg", "jpeg", "png", "gif", "bmp")
+
+    /**
+     * Checks whether a file (directory) is a child of a
+     * given parent directory.
+     */
+    private fun isChildPath(parent: File, child: File): Boolean {
+        var tmp: File? = child
+        while (tmp != null) {
+            if (tmp == parent) {
+                return true
+            }
+            tmp = tmp.parentFile
+        }
+        return false
+    }
+
+    /**
+     * Returns the configured sticker directory path.
+     */
+    private fun getConfigStickerDir(context: Context): String {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        return prefs.getString("pref_sticker_dir", DEFAULT_STICKER_DIR)
+    }
+
+    /**
+     * Initializes the configured sticker directory to its default value,
+     * if a value has not already been set.
+     */
+    fun initStickerDir(context: Context) {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        if (prefs.getString("pref_sticker_dir", "").isEmpty()) {
+            prefs.edit().putString("pref_sticker_dir", DEFAULT_STICKER_DIR).apply()
+        }
+    }
+
+    /**
+     * Validates the specified sticker directory path.
+     */
+    fun validateStickerDir(stickerDir: String): File {
+        val sdcard = Environment.getExternalStorageDirectory()
+        val file = File(sdcard, stickerDir).canonicalFile
+        if (!isChildPath(sdcard, file)) {
+            throw IOException("Invalid path: $stickerDir")
+        }
+        if (!file.exists()) {
+            throw FileNotFoundException("Directory not found: $stickerDir")
+        }
+        if (!file.isDirectory) {
+            throw IOException("Directory is a file: $stickerDir")
+        }
+        return file
+    }
+
+    /**
+     * Returns the sticker base directory. May throw an exception if the
+     * directory does not exist or the path in preferences is invalid.
+     */
+    private fun getStickerDir(context: Context): File {
+        val stickerDir = getConfigStickerDir(context)
+        return validateStickerDir(stickerDir)
+    }
 
     /**
      * Converts a sticker "relative path" into a File object.
      * Returns null if the path is invalid, or the sticker file
      * does not exist.
      */
-    fun getStickerFile(path: String): File? {
+    fun getStickerFile(context: Context, path: String): File? {
+        val stickerDir = try {
+            getStickerDir(context)
+        } catch (e: Exception) {
+            Klog.e("Sticker directory is invalid", e)
+            return null
+        }
+
         // Convert relative path into an absolute,
         // normalized path
         val file: File
         try {
-            file = File(baseDir, path).canonicalFile
+            file = File(stickerDir, path).canonicalFile
         } catch (e: IOException) {
+            Klog.e("Could not normalize path: $path")
             return null
         }
 
         // Ensure that path refers to a file, and that
         // the file exists
         if (!file.isFile) {
+            Klog.e("File not found or is a directory: $path")
             return null
         }
 
         // Check that the path didn't contain any kind
         // of sneaky directory traversal tricks by ensuring
         // the sticker file is a child of the base directory
-        var tmp: File? = file
-        while (tmp != null) {
-            if (tmp == baseDir) {
-                return file
-            }
-            tmp = tmp.parentFile
+        if (!isChildPath(stickerDir, file)) {
+            Klog.e("Invalid/malicious path: $path")
+            return null
         }
 
-        // No evil for you!
-        return null
+        return file
     }
 
     /**
      * Standard filesystem traversal algorithm, calls cb for each file
      * (not directory!) it finds. Does not yield/recurse into
      * files/directories with '.' as the first character in the name.
+     * Only finds JPG/PNG/GIF/BMP files.
      */
-    private fun traverseDirectory(path: String, dir: File, cb: (String, File) -> Unit) {
+    private fun traverseDirectory(packPath: String, dir: File, cb: (String, File) -> Unit) {
         dir.listFiles()
-            .filter { it.name[0] != '.' }
-            .forEach {
+            ?.filter { it.name[0] != '.' }
+            ?.forEach {
                 if (it.isDirectory) {
-                    traverseDirectory(path + "/" + it.name, it, cb)
-                } else {
-                    cb(path, it)
+                    traverseDirectory(packPath + "/" + it.name, it, cb)
+                } else if (STICKER_EXTENSIONS.contains(it.extension.toLowerCase())) {
+                    cb(packPath, it)
                 }
             }
     }
 
-    private fun scanStickers(): Map<String, List<File>> {
+    /**
+     * Returns a collection of sticker packs as a map {dir -> list<file>}.
+     * Each directory is guaranteed to have at least one file. The ordering
+     * is not guaranteed, however.
+     */
+    private fun scanStickers(context: Context): Map<String, List<File>> {
         val stickerMap = mutableMapOf<String, MutableList<File>>()
-        traverseDirectory("", baseDir, { path, file ->
-            stickerMap.getOrPut(path, ::mutableListOf).add(file)
+        val stickerDir = getStickerDir(context)
+        traverseDirectory(".", stickerDir, { packPath, stickerFile ->
+            Klog.i("Discovered sticker: $packPath/${stickerFile.name}")
+            stickerMap.getOrPut(packPath, ::mutableListOf).add(stickerFile)
         })
         return stickerMap
     }
 
-    fun refreshStickers(cb: (Exception?) -> Unit) {
-        val fbIndex = FirebaseAppIndex.getInstance()
-        val stickerMap = scanStickers()
-        val stickerPackList = mutableListOf<Indexable>()
-
-        stickerMap.forEach { (path, files) ->
-            // Create the pack first
-            val stickerPack = Indexables.stickerPackBuilder()
-                .setName(files[0].parentFile.name)
-                .setImage("content://$PROVIDER_AUTHORITY/$path/${files[0].name}")
-                .setUrl("usticker://sticker/$path")
-
-            // Create all stickers in the pack
-            val stickerList = mutableListOf<StickerBuilder>()
-            files.forEach { file ->
-                val sticker = Indexables.stickerBuilder()
-                    .setName(file.name)
-                    .setImage("content://$PROVIDER_AUTHORITY/$path/${file.name}")
-                    .setUrl("usticker://sticker/$path/${file.name}")
-                    .setIsPartOf(stickerPack)
-                stickerList.add(sticker)
-            }
-
-            stickerPack.setHasSticker(*stickerList.toTypedArray())
-            stickerPackList.add(stickerPack.build())
+    /**
+     * Refreshes the Firebase sticker index. Calls cb when complete;
+     * the argument will be null if the indexing was successful.
+     */
+    fun refreshStickerIndex(context: Context, cb: (Exception?) -> Unit) {
+        Klog.i("Scanning stickers...")
+        val stickerMap = try {
+            scanStickers(context)
+        } catch (e: Exception) {
+            cb(e)
+            return
         }
 
+        val stickerPackList = stickerMap.map { (packPath, stickerFiles) ->
+            // Create all stickers in the pack
+            val stickers = stickerFiles.map { stickerFile ->
+                Indexables.stickerBuilder()
+                    .setName(stickerFile.name)
+                    .setImage("content://$PROVIDER_AUTHORITY/$packPath/${stickerFile.name}")
+                    .setUrl("usticker://sticker/$packPath/${stickerFile.name}")
+            }
+
+            // Then create the sticker pack.
+            Indexables.stickerPackBuilder()
+                .setName(stickerFiles[0].parentFile.name)
+                .setImage("content://$PROVIDER_AUTHORITY/$packPath/${stickerFiles[0].name}")
+                .setUrl("usticker://sticker/$packPath")
+                .setHasSticker(*stickers.toTypedArray())
+                .build()
+        }
+
+        Klog.i("Updating Firebase index...")
+        val fbIndex = FirebaseAppIndex.getInstance()
         fbIndex.removeAll()
         fbIndex.update(*stickerPackList.toTypedArray())
             .addOnSuccessListener { cb(null) }
