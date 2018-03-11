@@ -9,17 +9,16 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.preference.PreferenceFragment
+import android.text.Html
 import android.util.Log
 import android.widget.Toast
+
 
 class SettingsFragment : PreferenceFragment() {
     companion object {
         private const val TWITTER_URL = "https://twitter.com/crossbowffs"
         private const val GITHUB_URL = "https://github.com/apsun/uSticker"
-        private const val EASTER_EGG_URL = "https://i.imgur.com/hh7TZfm.jpg"
     }
-
-    private var easterEggCounter = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,10 +63,7 @@ class SettingsFragment : PreferenceFragment() {
         findPreference("pref_about_version").apply {
             summary = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
             setOnPreferenceClickListener {
-                if (++easterEggCounter == 7) {
-                    easterEggCounter = 0
-                    startBrowserActivity(EASTER_EGG_URL)
-                }
+                showChangelogDialog()
                 true
             }
         }
@@ -78,11 +74,23 @@ class SettingsFragment : PreferenceFragment() {
         startActivity(intent)
     }
 
+    private fun getHtmlString(resId: Int): CharSequence {
+        return Html.fromHtml(getString(resId), Html.FROM_HTML_MODE_COMPACT)
+    }
+
     private fun showHelpDialog() {
         AlertDialog.Builder(context)
             .setTitle(R.string.help)
-            .setMessage(R.string.help_text)
+            .setMessage(getHtmlString(R.string.help_text))
             .setPositiveButton(R.string.got_it, null)
+            .show()
+    }
+
+    private fun showChangelogDialog() {
+        AlertDialog.Builder(context)
+            .setTitle(R.string.changelog)
+            .setMessage(getHtmlString(R.string.changelog_text))
+            .setPositiveButton(R.string.close, null)
             .show()
     }
 

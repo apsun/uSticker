@@ -12,15 +12,32 @@
     <string name="github">GitHub</string>
     <string name="version">Version</string>
     <string name="help_summary">View app usage instructions</string>
-    <string name="help_text">Copy your images to the SD card in the
-        configured directory, then press the refresh sticker index button.
-        Your images will show up in the Gboard sticker list.\n
+    <string name="help_text">
+        <![CDATA[
+            Copy your images to the SD card in the configured directory,
+            then press the refresh sticker index button.
+            Your images will show up in the Gboard sticker list.<br><br>
 
-        \nHave too many stickers to scroll through? Put your stickers
-        in sub-directories, and we\'ll generate a new sticker tab for each.\n
+            Have too many stickers to scroll through? Put your stickers
+            in sub-directories, and we\'ll generate a new sticker tab for
+            each.<br><br>
 
-        \nOnly PNG, JPG, GIF, and BMP files are supported. Any files or
-        directories with a name starting with . are ignored.</string>
+            Only PNG, JPG, GIF, and BMP files are supported. Any files or
+            directories with a name starting with . are ignored.
+        ]]>
+    </string>
+    <string name="changelog">Changelog</string>
+    <string name="changelog_text">
+        <![CDATA[
+            <h4>1.1</h4>
+            You can now search for stickers in Gboard! Keywords are
+            generated from the sticker file and parent directory names.
+            <br><br>
+
+            <h4>1.0</h4>
+            Initial release.
+        ]]>
+    </string>
     <string name="credits_summary">Andrew Sun (@crossbowffs)</string>
     <string name="github_summary">github.com/apsun/uSticker</string>
     <string name="refresh_sticker_index">Refresh sticker index</string>

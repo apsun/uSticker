@@ -94,9 +94,8 @@ object StickerManager {
 
         // Convert relative path into an absolute,
         // normalized path
-        val file: File
-        try {
-            file = File(stickerDir, path).canonicalFile
+        val file = try {
+            File(stickerDir, path).canonicalFile
         } catch (e: IOException) {
             Klog.e("Could not normalize path: $path")
             return null
@@ -146,11 +145,33 @@ object StickerManager {
     private fun scanStickers(context: Context): Map<String, List<File>> {
         val stickerMap = mutableMapOf<String, MutableList<File>>()
         val stickerDir = getStickerDir(context)
-        traverseDirectory(".", stickerDir, { packPath, stickerFile ->
+        traverseDirectory(".", stickerDir) { packPath, stickerFile ->
             Klog.i("Discovered sticker: $packPath/${stickerFile.name}")
             stickerMap.getOrPut(packPath, ::mutableListOf).add(stickerFile)
-        })
+        }
         return stickerMap
+    }
+
+    /**
+     * Generates a list of keywords for the sticker based on its
+     * file name. Currently, this splits on all non-alphanumeric
+     * characters and alpha-numeric boundaries.
+     */
+    private fun getKeywords(fileName: String): Array<String> {
+        // First, split on any non-alphanumeric characters
+        val nonSplitAlphaNum = fileName
+            .split(Regex("[\\W_]"))
+            .filter { it.isNotBlank() }
+
+        // Then, split patterns like abc123def to [abc, 123, def]
+        val splitAlphaNum = nonSplitAlphaNum.map {
+            Regex("[0-9]+|[a-zA-Z]+")
+                .findAll(it)
+                .map { it.value }
+                .toList()
+        }.flatten()
+
+        return splitAlphaNum.toTypedArray()
     }
 
     /**
@@ -167,22 +188,34 @@ object StickerManager {
         }
 
         val stickerPackList = stickerMap.map { (packPath, stickerFiles) ->
+            val packName = stickerFiles[0].parentFile.name
+            val packUrl = "usticker://sticker/$packPath"
+
             // Create all stickers in the pack
             val stickers = stickerFiles.map { stickerFile ->
                 Indexables.stickerBuilder()
                     .setName(stickerFile.name)
                     .setImage("content://$PROVIDER_AUTHORITY/$packPath/${stickerFile.name}")
+                    .setKeywords(*(arrayOf(packName) + getKeywords(stickerFile.nameWithoutExtension)))
                     .setUrl("usticker://sticker/$packPath/${stickerFile.name}")
             }
 
-            // Then create the sticker pack.
-            Indexables.stickerPackBuilder()
-                .setName(stickerFiles[0].parentFile.name)
+            // Then create the sticker pack
+            val pack = Indexables.stickerPackBuilder()
+                .setName(packName)
                 .setImage("content://$PROVIDER_AUTHORITY/$packPath/${stickerFiles[0].name}")
-                .setUrl("usticker://sticker/$packPath")
+                .setUrl(packUrl)
                 .setHasSticker(*stickers.toTypedArray())
                 .build()
-        }
+
+            // Finally add the sticker pack attribute to the stickers
+            stickers.map { it
+                .setIsPartOf(Indexables.stickerPackBuilder()
+                    .setName(packName)
+                    .setUrl(packUrl))
+                .build()
+            } + listOf(pack)
+        }.flatten()
 
         Klog.i("Updating Firebase index...")
         val fbIndex = FirebaseAppIndex.getInstance()
