@@ -16,7 +16,7 @@ import java.io.IOException
 object StickerManager {
     private const val PROVIDER_AUTHORITY = BuildConfig.APPLICATION_ID + ".provider"
     private const val DEFAULT_STICKER_DIR = "Pictures/Stickers/"
-    private val STICKER_EXTENSIONS = arrayOf("jpg", "jpeg", "png", "gif", "bmp")
+    private val STICKER_EXTENSIONS = arrayOf("jpg", "jpeg", "png", "apng", "gif", "bmp")
 
     /**
      * Checks whether a file (directory) is a child of a
@@ -123,7 +123,7 @@ object StickerManager {
      * Standard filesystem traversal algorithm, calls cb for each file
      * (not directory!) it finds. Does not yield/recurse into
      * files/directories with '.' as the first character in the name.
-     * Only finds JPG/PNG/GIF/BMP files.
+     * Only finds JPG/PNG/APNG/GIF/BMP files.
      */
     private fun traverseDirectory(packPath: String, dir: File, cb: (String, File) -> Unit) {
         dir.listFiles()
