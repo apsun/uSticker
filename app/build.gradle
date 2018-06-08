@@ -1,0 +1,36 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+dependencies {
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.2.41'
+    implementation 'com.google.firebase:firebase-core:15.0.0'
+    implementation 'com.google.firebase:firebase-appindexing:15.0.0'
+}
+
+android {
+    compileSdkVersion 28
+
+    defaultConfig {
+        versionCode 2
+        versionName '1.1'
+        minSdkVersion 25
+        targetSdkVersion 28
+        buildConfigField('String', 'LOG_TAG', '"uSticker"')
+    }
+
+    buildTypes {
+        debug {
+            buildConfigField('int', 'LOG_LEVEL', '2')
+        }
+
+        release {
+            buildConfigField('int', 'LOG_LEVEL', '4')
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+apply plugin: 'com.google.gms.google-services'
