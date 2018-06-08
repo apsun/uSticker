@@ -22,7 +22,7 @@
         </activity>
         <provider
             android:name=".StickerProvider"
-            android:authorities="${applicationId}.provider"
+            android:authorities="com.crossbowffs.usticker.provider"
             android:exported="true"
             android:grantUriPermissions="true"/>
     </application>

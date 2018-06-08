@@ -14,7 +14,7 @@
     <string name="help_summary">View app usage instructions</string>
     <string name="help_text">
         <![CDATA[
-            Copy your images to the SD card in the configured directory,
+            Copy your images to the configured storage directory,
             then press the refresh sticker index button.
             Your images will show up in the Gboard sticker list.<br><br>
 
