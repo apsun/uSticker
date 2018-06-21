@@ -9,6 +9,13 @@ determined by my own needs. I make this app public only in the hopes
 that you share my use-case and find it useful; please do not submit
 feature requests.
 
+## Usage
+
+1. Save stickers to your phone's storage
+2. Run uSticker and press 'Refresh sticker index'
+3. ???
+4. Profit!
+
 ## FAQ
 
 ### Why does this even exist?
