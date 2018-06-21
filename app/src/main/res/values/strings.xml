@@ -29,6 +29,11 @@
     <string name="changelog">Changelog</string>
     <string name="changelog_text">
         <![CDATA[
+            <h4>1.2</h4>
+            No longer fails if you have over 1000 stickers. Seriously
+            though, why do you have over 1000 stickers?!
+            <br><br>
+
             <h4>1.1</h4>
             You can now search for stickers in Gboard! Keywords are
             generated from the sticker file and parent directory names.
@@ -47,7 +52,7 @@
     <string name="refresh_failure_toast">Failed to refresh sticker index</string>
     <string name="refresh_failed">Refresh failed</string>
     <string name="change_storage_location">Change storage location</string>
-    <string name="storage_permissions_required">External storage permissions required</string>
+    <string name="storage_permissions_required">Storage permissions required</string>
     <string name="invalid_sticker_dir">Invalid sticker directory</string>
     <string name="stacktrace_copied">Stacktrace copied to clipboard</string>
 </resources>

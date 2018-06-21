@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Environment
 import android.preference.PreferenceManager
 import com.google.firebase.appindexing.FirebaseAppIndex
+import com.google.firebase.appindexing.Indexable
 import com.google.firebase.appindexing.builders.Indexables
 import java.io.File
 import java.io.FileNotFoundException
@@ -206,6 +207,7 @@ object StickerManager {
                 .setImage("content://$PROVIDER_AUTHORITY/$packPath/${stickerFiles[0].name}")
                 .setUrl(packUrl)
                 .setHasSticker(*stickers.toTypedArray())
+                .setMetadata(Indexable.Metadata.Builder().setWorksOffline(true))
                 .build()
 
             // Finally add the sticker pack attribute to the stickers
@@ -213,6 +215,7 @@ object StickerManager {
                 .setIsPartOf(Indexables.stickerPackBuilder()
                     .setName(packName)
                     .setUrl(packUrl))
+                .setMetadata(Indexable.Metadata.Builder().setWorksOffline(true))
                 .build()
             } + listOf(pack)
         }.flatten()
@@ -220,8 +223,28 @@ object StickerManager {
         Klog.i("Updating Firebase index...")
         val fbIndex = FirebaseAppIndex.getInstance()
         fbIndex.removeAll()
-        fbIndex.update(*stickerPackList.toTypedArray())
-            .addOnSuccessListener { cb(null) }
-            .addOnFailureListener { cb(it) }
+        IndexableUpdate(fbIndex, stickerPackList, cb).run()
+    }
+}
+
+/**
+ * Dumb workaround for the MAX_INDEXABLES_TO_BE_UPDATED_IN_ONE_CALL limit.
+ */
+class IndexableUpdate(
+    private val fbIndex: FirebaseAppIndex,
+    private val indexableList: List<Indexable>,
+    private val cb: (Exception?) -> Unit)
+{
+    private var index = 0
+    fun run() {
+        val step = Math.min(indexableList.size - index, Indexable.MAX_INDEXABLES_TO_BE_UPDATED_IN_ONE_CALL)
+        if (step > 0) {
+            fbIndex.update(*indexableList.subList(index, index + step).toTypedArray())
+                .addOnSuccessListener { run() }
+                .addOnFailureListener { cb(it) }
+            index += step
+        } else {
+            cb(null)
+        }
     }
 }
