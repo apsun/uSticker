@@ -29,17 +29,21 @@
     <string name="changelog">Changelog</string>
     <string name="changelog_text">
         <![CDATA[
-            <h4>1.2</h4>
+            <big><b>1.3</b></big><br>
+            Added support for Android 4.4 through 6.0.
+            <br><br>
+
+            <big><b>1.2</b></big><br>
             No longer fails if you have over 1000 stickers. Seriously
             though, why do you have over 1000 stickers?!
             <br><br>
 
-            <h4>1.1</h4>
+            <big><b>1.1</b></big><br>
             You can now search for stickers in Gboard! Keywords are
             generated from the sticker file and parent directory names.
             <br><br>
 
-            <h4>1.0</h4>
+            <big><b>1.0</b></big><br>
             Initial release.
         ]]>
     </string>

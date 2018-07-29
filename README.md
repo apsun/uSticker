@@ -29,12 +29,6 @@ uSticker lets you use your *own* stickers, not some pre-defined set
 of images. Obviously, if you don't have any stickers, this app won't be very
 useful.
 
-### Will you add support for (insert Android version here)?
-
-No. I am tired of having to support 5 years of slightly incompatible API
-changes. uSticker will only officially support whatever Android version I
-am currently running (at the time of writing, Android 7.1+).
-
 ### Will you add support for (insert app here)?
 
 If it supports Gboard stickers, then it already works. Otherwise, no. I will

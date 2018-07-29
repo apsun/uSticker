@@ -13,7 +13,6 @@ import android.text.Html
 import android.util.Log
 import android.widget.Toast
 
-
 class SettingsFragment : PreferenceFragment() {
     companion object {
         private const val TWITTER_URL = "https://twitter.com/crossbowffs"
@@ -22,7 +21,7 @@ class SettingsFragment : PreferenceFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        StickerManager.initStickerDir(context)
+        StickerManager.initStickerDir(activity)
         addPreferencesFromResource(R.xml.settings)
 
         findPreference("pref_refresh_index").setOnPreferenceClickListener {
@@ -36,7 +35,7 @@ class SettingsFragment : PreferenceFragment() {
                 StickerManager.validateStickerDir(stickerDir)
                 true
             } catch (e: Exception) {
-                AlertDialog.Builder(context)
+                AlertDialog.Builder(activity)
                     .setTitle(R.string.invalid_sticker_dir)
                     .setMessage(e.message)
                     .setPositiveButton(R.string.ok, null)
@@ -75,11 +74,11 @@ class SettingsFragment : PreferenceFragment() {
     }
 
     private fun getHtmlString(resId: Int): CharSequence {
-        return Html.fromHtml(getString(resId), Html.FROM_HTML_MODE_COMPACT)
+        return Html.fromHtml(getString(resId))
     }
 
     private fun showHelpDialog() {
-        AlertDialog.Builder(context)
+        AlertDialog.Builder(activity)
             .setTitle(R.string.help)
             .setMessage(getHtmlString(R.string.help_text))
             .setPositiveButton(R.string.got_it, null)
@@ -87,7 +86,7 @@ class SettingsFragment : PreferenceFragment() {
     }
 
     private fun showChangelogDialog() {
-        AlertDialog.Builder(context)
+        AlertDialog.Builder(activity)
             .setTitle(R.string.changelog)
             .setMessage(getHtmlString(R.string.changelog_text))
             .setPositiveButton(R.string.close, null)
@@ -95,40 +94,40 @@ class SettingsFragment : PreferenceFragment() {
     }
 
     private fun copyToClipboard(text: String) {
-        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText(null, text)
         clipboard.primaryClip = clip
     }
 
     private fun showStacktraceDialog(e: Throwable) {
         val stacktrace = Log.getStackTraceString(e)
-        AlertDialog.Builder(context)
+        AlertDialog.Builder(activity)
             .setTitle(R.string.refresh_failed)
             .setMessage(stacktrace)
             .setNeutralButton(R.string.copy) { _, _ ->
                 copyToClipboard(stacktrace)
-                Toast.makeText(context, R.string.stacktrace_copied, Toast.LENGTH_SHORT).show()
+                Toast.makeText(activity, R.string.stacktrace_copied, Toast.LENGTH_SHORT).show()
             }
             .setPositiveButton(R.string.close, null)
             .show()
     }
 
     private fun refreshStickerIndex() {
-        val dialog = ProgressDialog(context).apply {
+        val dialog = ProgressDialog(activity).apply {
             isIndeterminate = true
             setCancelable(false)
             setMessage(getString(R.string.refreshing_sticker_index))
             show()
         }
 
-        StickerManager.refreshStickerIndex(context) { e ->
+        StickerManager.refreshStickerIndex(activity) { e ->
             dialog.dismiss()
             if (e == null) {
                 Klog.i("Sticker index successfully refreshed")
-                Toast.makeText(context, R.string.refresh_success_toast, Toast.LENGTH_SHORT).show()
+                Toast.makeText(activity, R.string.refresh_success_toast, Toast.LENGTH_SHORT).show()
             } else {
                 Klog.e("Failed to refresh sticker index", e)
-                Toast.makeText(context, R.string.refresh_failure_toast, Toast.LENGTH_SHORT).show()
+                Toast.makeText(activity, R.string.refresh_failure_toast, Toast.LENGTH_SHORT).show()
                 showStacktraceDialog(e)
             }
         }

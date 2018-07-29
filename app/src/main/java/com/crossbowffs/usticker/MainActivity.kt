@@ -2,6 +2,7 @@ package com.crossbowffs.usticker
 
 import android.app.Activity
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 
@@ -13,7 +14,10 @@ class MainActivity : Activity() {
             .beginTransaction()
             .replace(R.id.content_frame, SettingsFragment())
             .commit()
-        requestPermissions(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 0)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 0)
+        }
     }
 
     override fun onRequestPermissionsResult(
