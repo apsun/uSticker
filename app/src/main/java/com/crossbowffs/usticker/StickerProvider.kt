@@ -14,7 +14,7 @@ class StickerProvider : ContentProvider() {
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {
         val path = uri.path ?: return null
         Klog.i("Requesting sticker: $path")
-        val file = StickerManager.getStickerFile(context, path) ?: return null
+        val file = StickerManager.getStickerFile(context!!, path) ?: return null
         return try {
             ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
         } catch (e: FileNotFoundException) {

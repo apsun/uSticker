@@ -3,6 +3,7 @@ package com.crossbowffs.usticker
 import android.content.Context
 import android.os.Environment
 import android.preference.PreferenceManager
+import android.text.TextUtils
 import com.google.firebase.appindexing.FirebaseAppIndex
 import com.google.firebase.appindexing.Indexable
 import com.google.firebase.appindexing.builders.Indexables
@@ -39,7 +40,7 @@ object StickerManager {
      */
     private fun getConfigStickerDir(context: Context): String {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        return prefs.getString("pref_sticker_dir", DEFAULT_STICKER_DIR)
+        return prefs.getString("pref_sticker_dir", DEFAULT_STICKER_DIR) ?: ""
     }
 
     /**
@@ -48,7 +49,7 @@ object StickerManager {
      */
     fun initStickerDir(context: Context) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        if (prefs.getString("pref_sticker_dir", "").isEmpty()) {
+        if (TextUtils.isEmpty(prefs.getString("pref_sticker_dir", ""))) {
             prefs.edit().putString("pref_sticker_dir", DEFAULT_STICKER_DIR).apply()
         }
     }
