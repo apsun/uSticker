@@ -40,7 +40,7 @@ object StickerManager {
      */
     private fun getConfigStickerDir(context: Context): String {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        return prefs.getString("pref_sticker_dir", DEFAULT_STICKER_DIR) ?: ""
+        return prefs.getString("pref_sticker_dir", null) ?: DEFAULT_STICKER_DIR
     }
 
     /**
@@ -49,7 +49,7 @@ object StickerManager {
      */
     fun initStickerDir(context: Context) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        if (TextUtils.isEmpty(prefs.getString("pref_sticker_dir", ""))) {
+        if (TextUtils.isEmpty(prefs.getString("pref_sticker_dir", null))) {
             prefs.edit().putString("pref_sticker_dir", DEFAULT_STICKER_DIR).apply()
         }
     }

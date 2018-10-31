@@ -16,7 +16,7 @@ class MainActivity : Activity() {
             .commit()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            requestPermissions(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 0)
+            requestPermissions(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1337)
         }
     }
 
@@ -25,11 +25,11 @@ class MainActivity : Activity() {
         permissions: Array<out String>,
         grantResults: IntArray) {
 
-        if (requestCode != 0) {
+        if (requestCode != 1337) {
             return
         }
 
-        if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+        if (grantResults.size != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, R.string.storage_permissions_required, Toast.LENGTH_SHORT).show()
             finish()
         }

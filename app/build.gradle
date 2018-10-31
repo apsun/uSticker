@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 dependencies {
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.2.61'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.2.70'
     implementation 'com.google.firebase:firebase-core:16.0.1'
     implementation 'com.google.firebase:firebase-appindexing:16.0.1'
 }
@@ -11,8 +11,8 @@ android {
     compileSdkVersion 28
 
     defaultConfig {
-        versionCode 6
-        versionName '1.4'
+        versionCode 7
+        versionName '1.4.1'
         minSdkVersion 19
         targetSdkVersion 28
         buildConfigField('String', 'LOG_TAG', '"uSticker"')
