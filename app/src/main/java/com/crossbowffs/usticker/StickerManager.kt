@@ -18,7 +18,7 @@ import java.io.IOException
 object StickerManager {
     private const val PROVIDER_AUTHORITY = BuildConfig.APPLICATION_ID + ".provider"
     private const val DEFAULT_STICKER_DIR = "Pictures/Stickers/"
-    private val STICKER_EXTENSIONS = arrayOf("jpg", "jpeg", "png", "gif", "bmp")
+    private val STICKER_EXTENSIONS = arrayOf("jpg", "jpeg", "png", "gif", "bmp", "webp")
 
     /**
      * Checks whether a file (directory) is a child of a
