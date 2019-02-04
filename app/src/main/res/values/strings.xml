@@ -29,6 +29,10 @@
     <string name="changelog">Changelog</string>
     <string name="changelog_text">
         <![CDATA[
+            <big><b>1.4.2</b></big><br>
+            Added support for WebP images.
+            <br><br>
+
             <big><b>1.4.1</b></big><br>
             Fixed a bug that caused the app to crash when requesting
             storage permissions on some phones.
