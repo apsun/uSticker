@@ -22,8 +22,8 @@
             in sub-directories, and we\'ll generate a new sticker tab for
             each.<br><br>
 
-            Only PNG, JPG, GIF, and BMP files are supported. Any files or
-            directories with a name starting with . are ignored.
+            Only PNG, JPG, GIF, BMP, and WebP files are supported. Any
+            files or directories with a name starting with . are ignored.
         ]]>
     </string>
     <string name="changelog">Changelog</string>
