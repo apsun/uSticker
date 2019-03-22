@@ -29,6 +29,11 @@
     <string name="changelog">Changelog</string>
     <string name="changelog_text">
         <![CDATA[
+            <big><b>1.4.3</b></big><br>
+            Fixed index refresh failing if you have a lot of stickers.
+            Again.
+            <br><br>
+
             <big><b>1.4.2</b></big><br>
             Added support for WebP images.
             <br><br>
