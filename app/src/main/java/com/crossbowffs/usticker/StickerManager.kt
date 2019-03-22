@@ -228,7 +228,9 @@ object StickerManager {
 }
 
 /**
- * Dumb workaround for the MAX_INDEXABLES_TO_BE_UPDATED_IN_ONE_CALL limit.
+ * Batches calls to Firebase to avoid the maximum parcel size limit (1MB).
+ * The hard limit is 1000, though it seems it actually gets reached at around
+ * 500 stickers in practice.
  */
 class IndexableUpdate(
     private val fbIndex: FirebaseAppIndex,
@@ -237,7 +239,7 @@ class IndexableUpdate(
 {
     private var index = 0
     fun run() {
-        val step = Math.min(indexableList.size - index, Indexable.MAX_INDEXABLES_TO_BE_UPDATED_IN_ONE_CALL)
+        val step = Math.min(indexableList.size - index, 250)
         if (step > 0) {
             fbIndex.update(*indexableList.subList(index, index + step).toTypedArray())
                 .addOnSuccessListener { run() }
