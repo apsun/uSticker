@@ -1,6 +1,7 @@
 package com.crossbowffs.usticker
 
 import android.content.Context
+import android.os.AsyncTask
 import android.os.Environment
 import android.preference.PreferenceManager
 import android.text.TextUtils
@@ -122,38 +123,6 @@ object StickerManager {
     }
 
     /**
-     * Standard filesystem traversal algorithm, calls cb for each file
-     * (not directory!) it finds. Does not yield/recurse into
-     * files/directories with '.' as the first character in the name.
-     */
-    private fun traverseDirectory(packPath: String, dir: File, cb: (String, File) -> Unit) {
-        dir.listFiles()
-            ?.filter { it.name[0] != '.' }
-            ?.forEach {
-                if (it.isDirectory) {
-                    traverseDirectory(packPath + "/" + it.name, it, cb)
-                } else if (STICKER_EXTENSIONS.contains(it.extension.toLowerCase())) {
-                    cb(packPath, it)
-                }
-            }
-    }
-
-    /**
-     * Returns a collection of sticker packs as a map {dir -> list<file>}.
-     * Each directory is guaranteed to have at least one file. The ordering
-     * is not guaranteed, however.
-     */
-    private fun scanStickers(context: Context): Map<String, List<File>> {
-        val stickerMap = mutableMapOf<String, MutableList<File>>()
-        val stickerDir = getStickerDir(context)
-        traverseDirectory(".", stickerDir) { packPath, stickerFile ->
-            Klog.i("Discovered sticker: $packPath/${stickerFile.name}")
-            stickerMap.getOrPut(packPath, ::mutableListOf).add(stickerFile)
-        }
-        return stickerMap
-    }
-
-    /**
      * Generates a list of keywords for the sticker based on its
      * file name. Currently, this splits on all non-alphanumeric
      * characters and alpha-numeric boundaries.
@@ -176,18 +145,40 @@ object StickerManager {
     }
 
     /**
-     * Refreshes the Firebase sticker index. Calls cb when complete;
-     * the argument will be null if the indexing was successful.
+     * Standard filesystem traversal algorithm, calls cb for each file
+     * (not directory!) it finds. Does not yield/recurse into
+     * files/directories with '.' as the first character in the name.
      */
-    fun refreshStickerIndex(context: Context, cb: (Exception?) -> Unit) {
-        Klog.i("Scanning stickers...")
-        val stickerMap = try {
-            scanStickers(context)
-        } catch (e: Exception) {
-            cb(e)
-            return
-        }
+    private fun traverseDirectory(packPath: String, dir: File, cb: (String, File) -> Unit) {
+        dir.listFiles()
+            ?.filter { it.name[0] != '.' }
+            ?.forEach {
+                if (it.isDirectory) {
+                    traverseDirectory(packPath + "/" + it.name, it, cb)
+                } else if (STICKER_EXTENSIONS.contains(it.extension.toLowerCase())) {
+                    cb(packPath, it)
+                }
+            }
+    }
 
+    /**
+     * Returns a collection of sticker packs as a map {dir -> list<file>}.
+     * Each directory is guaranteed to have at least one file. The ordering
+     * is not guaranteed, however.
+     */
+    private fun scanStickers(stickerDir: File): Map<String, List<File>> {
+        val stickerMap = mutableMapOf<String, MutableList<File>>()
+        traverseDirectory(".", stickerDir) { packPath, stickerFile ->
+            Klog.i("Discovered sticker: $packPath/${stickerFile.name}")
+            stickerMap.getOrPut(packPath, ::mutableListOf).add(stickerFile)
+        }
+        return stickerMap
+    }
+
+    /**
+     * Callback for scanStickers async task that gets executed on the main thread.
+     */
+    private fun onScanStickersDone(stickerMap: Map<String, List<File>>, cb: (Exception?) -> Unit) {
         val stickerPackList = stickerMap.map { (packPath, stickerFiles) ->
             val packName = stickerFiles[0].parentFile.name
             val packUrl = "usticker://sticker/$packPath"
@@ -223,30 +214,24 @@ object StickerManager {
         Klog.i("Updating Firebase index...")
         val fbIndex = FirebaseAppIndex.getInstance()
         fbIndex.removeAll()
-        IndexableUpdate(fbIndex, stickerPackList, cb).run()
+        IndexableUpdater(fbIndex, stickerPackList, cb).run()
     }
-}
 
-/**
- * Batches calls to Firebase to avoid the maximum parcel size limit (1MB).
- * The hard limit is 1000, though it seems it actually gets reached at around
- * 500 stickers in practice.
- */
-class IndexableUpdate(
-    private val fbIndex: FirebaseAppIndex,
-    private val indexableList: List<Indexable>,
-    private val cb: (Exception?) -> Unit)
-{
-    private var index = 0
-    fun run() {
-        val step = Math.min(indexableList.size - index, 250)
-        if (step > 0) {
-            fbIndex.update(*indexableList.subList(index, index + step).toTypedArray())
-                .addOnSuccessListener { run() }
-                .addOnFailureListener { cb(it) }
-            index += step
-        } else {
-            cb(null)
-        }
+    /**
+     * Refreshes the Firebase sticker index. Calls cb when complete;
+     * the argument will be null if the indexing was successful.
+     */
+    fun refreshStickerIndex(context: Context, cb: (Exception?) -> Unit) {
+        Klog.i("Scanning stickers...")
+        val stickerDir = getStickerDir(context)
+        (object : AsyncTask<Unit, Unit, Map<String, List<File>>>() {
+            override fun doInBackground(vararg args: Unit):  Map<String, List<File>> {
+                return scanStickers(stickerDir)
+            }
+
+            override fun onPostExecute(result: Map<String, List<File>>) {
+                onScanStickersDone(result, cb)
+            }
+        }).execute()
     }
 }
