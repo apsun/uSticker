@@ -8,15 +8,15 @@
     <string name="close">Close</string>
     <string name="copy">Copy</string>
     <string name="help">Help</string>
-    <string name="credits">Credits</string>
+    <string name="developer">Developer</string>
     <string name="github">GitHub</string>
     <string name="version">Version</string>
     <string name="help_summary">View app usage instructions</string>
     <string name="help_text">
         <![CDATA[
             Copy your images to the configured storage location,
-            then press the refresh sticker index button.
-            Your images will show up in the Gboard sticker list.<br><br>
+            then press the import stickers button. Your images will show
+            up in the Gboard sticker list.<br><br>
 
             Have too many stickers to scroll through? Put your stickers
             in sub-directories, and we\'ll generate a new sticker tab for
@@ -29,6 +29,11 @@
     <string name="changelog">Changelog</string>
     <string name="changelog_text">
         <![CDATA[
+            <big><b>1.4.4</b></big><br>
+            Fixed crash if the configured sticker directory does not
+            exist. Also reworded some text to be more understandable.
+            <br><br>
+
             <big><b>1.4.3</b></big><br>
             Fixed index refresh failing if you have a lot of stickers.
             Again.
@@ -66,16 +71,19 @@
             Initial release.
         ]]>
     </string>
-    <string name="credits_summary">Andrew Sun (@crossbowffs)</string>
+    <string name="developer_summary">Andrew Sun (@crossbowffs)</string>
     <string name="github_summary">github.com/apsun/uSticker</string>
-    <string name="refresh_sticker_index">Refresh sticker index</string>
-    <string name="refresh_sticker_index_summary">Press after adding stickers or changing settings</string>
-    <string name="refreshing_sticker_index">Refreshing sticker index…</string>
-    <string name="refresh_success_toast">Sticker index successfully refreshed</string>
-    <string name="refresh_failure_toast">Failed to refresh sticker index</string>
-    <string name="refresh_failed">Refresh failed</string>
+    <string name="import_stickers">Import stickers to Gboard</string>
+    <string name="import_stickers_summary">Press after adding stickers or changing settings</string>
+    <string name="importing_stickers">Importing stickers to Gboard…</string>
+    <string name="import_success_toast">Successfully imported %1$d sticker(s)</string>
+    <string name="import_failed_title">Import failed</string>
     <string name="change_storage_location">Change storage location</string>
     <string name="storage_permissions_required">Storage permissions required</string>
     <string name="invalid_sticker_dir">Invalid sticker directory</string>
+    <string name="sticker_dir_not_found">
+        The configured sticker directory does not exist. Please create
+        the following directory and copy your stickers to it:\n\n%1$s
+    </string>
     <string name="stacktrace_copied">Stacktrace copied to clipboard</string>
 </resources>

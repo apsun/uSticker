@@ -1,6 +1,7 @@
 package com.crossbowffs.usticker
 
 import android.app.AlertDialog
+import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -12,6 +13,7 @@ import android.preference.PreferenceFragment
 import android.text.Html
 import android.util.Log
 import android.widget.Toast
+import java.io.FileNotFoundException
 
 class SettingsFragment : PreferenceFragment() {
     companion object {
@@ -35,11 +37,7 @@ class SettingsFragment : PreferenceFragment() {
                 StickerManager.validateStickerDir(stickerDir)
                 true
             } catch (e: Exception) {
-                AlertDialog.Builder(activity)
-                    .setTitle(R.string.invalid_sticker_dir)
-                    .setMessage(e.message)
-                    .setPositiveButton(R.string.ok, null)
-                    .show()
+                showInvalidStickerDirDialog(newValue, e)
                 false
             }
         }
@@ -49,7 +47,7 @@ class SettingsFragment : PreferenceFragment() {
             true
         }
 
-        findPreference("pref_about_credits").setOnPreferenceClickListener {
+        findPreference("pref_about_developer").setOnPreferenceClickListener {
             startBrowserActivity(TWITTER_URL)
             true
         }
@@ -60,7 +58,7 @@ class SettingsFragment : PreferenceFragment() {
         }
 
         findPreference("pref_about_version").apply {
-            summary = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
+            setSummary("${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
             setOnPreferenceClickListener {
                 showChangelogDialog()
                 true
@@ -96,13 +94,27 @@ class SettingsFragment : PreferenceFragment() {
     private fun copyToClipboard(text: String) {
         val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText(null, text)
-        clipboard.primaryClip = clip
+        clipboard.setPrimaryClip(clip)
+    }
+
+    private fun showInvalidStickerDirDialog(dir: String, e: Exception) {
+        val message = if (e is FileNotFoundException) {
+            getString(R.string.sticker_dir_not_found, dir)
+        } else {
+            e.message
+        }
+
+        AlertDialog.Builder(activity)
+            .setTitle(R.string.invalid_sticker_dir)
+            .setMessage(message)
+            .setPositiveButton(R.string.ok, null)
+            .show()
     }
 
     private fun showStacktraceDialog(e: Throwable) {
         val stacktrace = Log.getStackTraceString(e)
         AlertDialog.Builder(activity)
-            .setTitle(R.string.refresh_failed)
+            .setTitle(R.string.import_failed_title)
             .setMessage(stacktrace)
             .setNeutralButton(R.string.copy) { _, _ ->
                 copyToClipboard(stacktrace)
@@ -112,23 +124,43 @@ class SettingsFragment : PreferenceFragment() {
             .show()
     }
 
+    private fun onRefreshSucceeded(dialog: Dialog, numStickers: Int) {
+        dialog.dismiss()
+        Klog.i("Sticker index successfully refreshed, found $numStickers stickers")
+        val message = getString(R.string.import_success_toast, numStickers)
+        Toast.makeText(activity, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun onRefreshFailed(dialog: Dialog, err: Exception) {
+        dialog.dismiss()
+        Klog.e("Failed to refresh sticker index", err)
+        showStacktraceDialog(err)
+    }
+
     private fun refreshStickerIndex() {
+        val stickerDir = try {
+            StickerManager.getStickerDir(activity)
+        } catch (e: Exception) {
+            showInvalidStickerDirDialog(StickerManager.getConfigStickerDir(activity), e)
+            return
+        }
+
         val dialog = ProgressDialog(activity).apply {
-            isIndeterminate = true
+            setIndeterminate(true)
             setCancelable(false)
-            setMessage(getString(R.string.refreshing_sticker_index))
+            setMessage(getString(R.string.importing_stickers))
             show()
         }
 
-        StickerManager.refreshStickerIndex(activity) { e ->
-            dialog.dismiss()
-            if (e == null) {
-                Klog.i("Sticker index successfully refreshed")
-                Toast.makeText(activity, R.string.refresh_success_toast, Toast.LENGTH_SHORT).show()
-            } else {
-                Klog.e("Failed to refresh sticker index", e)
-                Toast.makeText(activity, R.string.refresh_failure_toast, Toast.LENGTH_SHORT).show()
-                showStacktraceDialog(e)
+        StickerScanner().executeWithCallback(stickerDir) { result ->
+            when (result) {
+                is Result.Err -> onRefreshFailed(dialog, result.err)
+                is Result.Ok -> FirebaseIndexUpdater().executeWithCallback(result.value) { result2 ->
+                    when (result2) {
+                        is Result.Err -> onRefreshFailed(dialog, result2.err)
+                        is Result.Ok -> onRefreshSucceeded(dialog, result2.value)
+                    }
+                }
             }
         }
     }

@@ -4,8 +4,8 @@
     <PreferenceCategory android:title="@string/actions">
         <Preference
             android:key="pref_refresh_index"
-            android:title="@string/refresh_sticker_index"
-            android:summary="@string/refresh_sticker_index_summary"/>
+            android:title="@string/import_stickers"
+            android:summary="@string/import_stickers_summary"/>
         <com.crossbowffs.usticker.AutoEditTextPreference
             android:key="pref_sticker_dir"
             android:title="@string/change_storage_location"/>
@@ -16,9 +16,9 @@
             android:title="@string/help"
             android:summary="@string/help_summary"/>
         <Preference
-            android:key="pref_about_credits"
-            android:title="@string/credits"
-            android:summary="@string/credits_summary"/>
+            android:key="pref_about_developer"
+            android:title="@string/developer"
+            android:summary="@string/developer_summary"/>
         <Preference
             android:key="pref_about_github"
             android:title="@string/github"

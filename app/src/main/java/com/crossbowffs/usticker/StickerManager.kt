@@ -1,13 +1,9 @@
 package com.crossbowffs.usticker
 
 import android.content.Context
-import android.os.AsyncTask
 import android.os.Environment
 import android.preference.PreferenceManager
 import android.text.TextUtils
-import com.google.firebase.appindexing.FirebaseAppIndex
-import com.google.firebase.appindexing.Indexable
-import com.google.firebase.appindexing.builders.Indexables
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -17,9 +13,8 @@ import java.io.IOException
  * sticker files from the filesystem.
  */
 object StickerManager {
-    private const val PROVIDER_AUTHORITY = BuildConfig.APPLICATION_ID + ".provider"
+    const val PROVIDER_AUTHORITY = BuildConfig.APPLICATION_ID + ".provider"
     private const val DEFAULT_STICKER_DIR = "Pictures/Stickers/"
-    private val STICKER_EXTENSIONS = arrayOf("jpg", "jpeg", "png", "gif", "bmp", "webp")
 
     /**
      * Checks whether a file (directory) is a child of a
@@ -39,7 +34,7 @@ object StickerManager {
     /**
      * Returns the configured sticker directory path.
      */
-    private fun getConfigStickerDir(context: Context): String {
+    fun getConfigStickerDir(context: Context): String {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         return prefs.getString("pref_sticker_dir", null) ?: DEFAULT_STICKER_DIR
     }
@@ -62,13 +57,13 @@ object StickerManager {
         val sdcard = Environment.getExternalStorageDirectory()
         val file = File(sdcard, stickerDir).canonicalFile
         if (!isChildPath(sdcard, file)) {
-            throw IOException("Invalid path: $stickerDir")
+            throw IOException("Path is outside external storage: $stickerDir")
         }
         if (!file.exists()) {
-            throw FileNotFoundException("Directory not found: $stickerDir")
+            throw FileNotFoundException("Directory does not exist: $stickerDir")
         }
         if (!file.isDirectory) {
-            throw IOException("Directory is a file: $stickerDir")
+            throw IOException("Path exists but is a file: $stickerDir")
         }
         return file
     }
@@ -77,7 +72,7 @@ object StickerManager {
      * Returns the sticker base directory. May throw an exception if the
      * directory does not exist or the path in preferences is invalid.
      */
-    private fun getStickerDir(context: Context): File {
+    fun getStickerDir(context: Context): File {
         val stickerDir = getConfigStickerDir(context)
         return validateStickerDir(stickerDir)
     }
@@ -120,118 +115,5 @@ object StickerManager {
         }
 
         return file
-    }
-
-    /**
-     * Generates a list of keywords for the sticker based on its
-     * file name. Currently, this splits on all non-alphanumeric
-     * characters and alpha-numeric boundaries.
-     */
-    private fun getKeywords(fileName: String): Array<String> {
-        // First, split on any non-alphanumeric characters
-        val nonSplitAlphaNum = fileName
-            .split(Regex("[\\W_]"))
-            .filter { it.isNotBlank() }
-
-        // Then, split patterns like abc123def to [abc, 123, def]
-        val splitAlphaNum = nonSplitAlphaNum.map {
-            Regex("[0-9]+|[a-zA-Z]+")
-                .findAll(it)
-                .map { it.value }
-                .toList()
-        }.flatten()
-
-        return splitAlphaNum.toTypedArray()
-    }
-
-    /**
-     * Standard filesystem traversal algorithm, calls cb for each file
-     * (not directory!) it finds. Does not yield/recurse into
-     * files/directories with '.' as the first character in the name.
-     */
-    private fun traverseDirectory(packPath: String, dir: File, cb: (String, File) -> Unit) {
-        dir.listFiles()
-            ?.filter { it.name[0] != '.' }
-            ?.forEach {
-                if (it.isDirectory) {
-                    traverseDirectory(packPath + "/" + it.name, it, cb)
-                } else if (STICKER_EXTENSIONS.contains(it.extension.toLowerCase())) {
-                    cb(packPath, it)
-                }
-            }
-    }
-
-    /**
-     * Returns a collection of sticker packs as a map {dir -> list<file>}.
-     * Each directory is guaranteed to have at least one file. The ordering
-     * is not guaranteed, however.
-     */
-    private fun scanStickers(stickerDir: File): Map<String, List<File>> {
-        val stickerMap = mutableMapOf<String, MutableList<File>>()
-        traverseDirectory(".", stickerDir) { packPath, stickerFile ->
-            Klog.i("Discovered sticker: $packPath/${stickerFile.name}")
-            stickerMap.getOrPut(packPath, ::mutableListOf).add(stickerFile)
-        }
-        return stickerMap
-    }
-
-    /**
-     * Callback for scanStickers async task that gets executed on the main thread.
-     */
-    private fun onScanStickersDone(stickerMap: Map<String, List<File>>, cb: (Exception?) -> Unit) {
-        val stickerPackList = stickerMap.map { (packPath, stickerFiles) ->
-            val packName = stickerFiles[0].parentFile.name
-            val packUrl = "usticker://sticker/$packPath"
-
-            // Create all stickers in the pack
-            val stickers = stickerFiles.map { stickerFile ->
-                Indexables.stickerBuilder()
-                    .setName(stickerFile.name)
-                    .setImage("content://$PROVIDER_AUTHORITY/$packPath/${stickerFile.name}")
-                    .setKeywords(*(arrayOf(packName) + getKeywords(stickerFile.nameWithoutExtension)))
-                    .setUrl("usticker://sticker/$packPath/${stickerFile.name}")
-            }
-
-            // Then create the sticker pack
-            val pack = Indexables.stickerPackBuilder()
-                .setName(packName)
-                .setImage("content://$PROVIDER_AUTHORITY/$packPath/${stickerFiles[0].name}")
-                .setUrl(packUrl)
-                .setHasSticker(*stickers.toTypedArray())
-                .setMetadata(Indexable.Metadata.Builder().setWorksOffline(true))
-                .build()
-
-            // Finally add the sticker pack attribute to the stickers
-            stickers.map { it
-                .setIsPartOf(Indexables.stickerPackBuilder()
-                    .setName(packName)
-                    .setUrl(packUrl))
-                .setMetadata(Indexable.Metadata.Builder().setWorksOffline(true))
-                .build()
-            } + listOf(pack)
-        }.flatten()
-
-        Klog.i("Updating Firebase index...")
-        val fbIndex = FirebaseAppIndex.getInstance()
-        fbIndex.removeAll()
-        IndexableUpdater(fbIndex, stickerPackList, cb).run()
-    }
-
-    /**
-     * Refreshes the Firebase sticker index. Calls cb when complete;
-     * the argument will be null if the indexing was successful.
-     */
-    fun refreshStickerIndex(context: Context, cb: (Exception?) -> Unit) {
-        Klog.i("Scanning stickers...")
-        val stickerDir = getStickerDir(context)
-        (object : AsyncTask<Unit, Unit, Map<String, List<File>>>() {
-            override fun doInBackground(vararg args: Unit):  Map<String, List<File>> {
-                return scanStickers(stickerDir)
-            }
-
-            override fun onPostExecute(result: Map<String, List<File>>) {
-                onScanStickersDone(result, cb)
-            }
-        }).execute()
     }
 }
