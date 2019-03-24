@@ -26,8 +26,8 @@ class SettingsFragment : PreferenceFragment() {
         StickerManager.initStickerDir(activity)
         addPreferencesFromResource(R.xml.settings)
 
-        findPreference("pref_refresh_index").setOnPreferenceClickListener {
-            refreshStickerIndex()
+        findPreference("pref_import_stickers").setOnPreferenceClickListener {
+            importStickers()
             true
         }
 
@@ -124,20 +124,20 @@ class SettingsFragment : PreferenceFragment() {
             .show()
     }
 
-    private fun onRefreshSucceeded(dialog: Dialog, numStickers: Int) {
+    private fun onImportSuccess(dialog: Dialog, numStickers: Int) {
         dialog.dismiss()
-        Klog.i("Sticker index successfully refreshed, found $numStickers stickers")
+        Klog.i("Successfully imported $numStickers stickers")
         val message = getString(R.string.import_success_toast, numStickers)
         Toast.makeText(activity, message, Toast.LENGTH_SHORT).show()
     }
 
-    private fun onRefreshFailed(dialog: Dialog, err: Exception) {
+    private fun onImportFailed(dialog: Dialog, err: Exception) {
         dialog.dismiss()
-        Klog.e("Failed to refresh sticker index", err)
+        Klog.e("Failed to import stickers", err)
         showStacktraceDialog(err)
     }
 
-    private fun refreshStickerIndex() {
+    private fun importStickers() {
         val stickerDir = try {
             StickerManager.getStickerDir(activity)
         } catch (e: Exception) {
@@ -152,13 +152,13 @@ class SettingsFragment : PreferenceFragment() {
             show()
         }
 
-        StickerScanner().executeWithCallback(stickerDir) { result ->
-            when (result) {
-                is Result.Err -> onRefreshFailed(dialog, result.err)
-                is Result.Ok -> FirebaseIndexUpdater().executeWithCallback(result.value) { result2 ->
-                    when (result2) {
-                        is Result.Err -> onRefreshFailed(dialog, result2.err)
-                        is Result.Ok -> onRefreshSucceeded(dialog, result2.value)
+        StickerScanner().executeWithCallback(stickerDir) { scanResult ->
+            when (scanResult) {
+                is Result.Err -> onImportFailed(dialog, scanResult.err)
+                is Result.Ok -> FirebaseIndexUpdater().executeWithCallback(scanResult.value) { updateResult ->
+                    when (updateResult) {
+                        is Result.Err -> onImportFailed(dialog, updateResult.err)
+                        is Result.Ok -> onImportSuccess(dialog, updateResult.value)
                     }
                 }
             }

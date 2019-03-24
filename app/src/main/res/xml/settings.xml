@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="@string/actions">
         <Preference
-            android:key="pref_refresh_index"
+            android:key="pref_import_stickers"
             android:title="@string/import_stickers"
             android:summary="@string/import_stickers_summary"/>
         <com.crossbowffs.usticker.AutoEditTextPreference

@@ -35,7 +35,6 @@ class StickerScanner : FailableAsyncTask<File, Map<String, List<File>>>() {
     override fun run(arg: File): Map<String, List<File>> {
         val stickerMap = mutableMapOf<String, MutableList<File>>()
         traverseDirectory(".", arg) { packPath, stickerFile ->
-            Klog.i("Discovered sticker: $packPath/${stickerFile.name}")
             stickerMap.getOrPut(packPath, ::mutableListOf).add(stickerFile)
         }
         return stickerMap
