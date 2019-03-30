@@ -12,7 +12,7 @@ feature requests.
 ## Usage
 
 1. Save stickers to your phone's storage
-2. Run uSticker and press 'Refresh sticker index'
+2. Run uSticker and press 'import stickers'
 3. ???
 4. Profit!
 
