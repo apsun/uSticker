@@ -7,8 +7,8 @@ import android.net.Uri
  */
 class Sticker(
     val documentId: String,
-    val name: String
-) {
+    val name: String)
+{
     /**
      * Returns the URI that is used to load sticker files from our
      * provider. This is an externally visible content:// URI.

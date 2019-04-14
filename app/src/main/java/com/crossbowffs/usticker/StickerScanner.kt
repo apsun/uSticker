@@ -27,15 +27,14 @@ class StickerScanner(private val resolver: ContentResolver) : FailableAsyncTask<
         rootDir: Uri,
         packPath: MutableList<String>,
         dirDocumentId: String,
-        cb: (Array<String>, Sticker) -> Unit
-    ) {
+        cb: (Array<String>, Sticker) -> Unit)
+    {
         resolver.query(
             DocumentsContract.buildChildDocumentsUriUsingTree(rootDir, dirDocumentId),
             arrayOf(
                 DocumentsContract.Document.COLUMN_DOCUMENT_ID,
                 DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-                DocumentsContract.Document.COLUMN_MIME_TYPE
-            ),
+                DocumentsContract.Document.COLUMN_MIME_TYPE),
             null,
             null,
             null

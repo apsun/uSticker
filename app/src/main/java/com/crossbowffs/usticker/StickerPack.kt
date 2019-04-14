@@ -7,8 +7,8 @@ import android.net.Uri
  */
 class StickerPack(
     val path: List<String>,
-    val stickers: List<Sticker>
-) {
+    val stickers: List<Sticker>)
+{
     /**
      * Returns a unique URI representing this sticker pack in Firebase.
      * It has no real meaning (we could replace it with a random UUID),

@@ -83,7 +83,11 @@ class FirebaseIndexUpdater {
      * Calls the provided callback on completion with the number
      * of sticker files imported.
      */
-    private fun addIndexables(indexableList: List<Indexable>, offset: Int, callback: (Result<Int>) -> Unit) {
+    private fun addIndexables(
+        indexableList: List<Indexable>,
+        offset: Int,
+        callback: (Result<Int>) -> Unit)
+    {
         val step = Math.min(indexableList.size - offset, 250)
         if (step > 0) {
             fbIndex.update(*indexableList.subList(offset, offset + step).toTypedArray())
