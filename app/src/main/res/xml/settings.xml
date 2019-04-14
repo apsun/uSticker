@@ -6,9 +6,10 @@
             android:key="pref_import_stickers"
             android:title="@string/import_stickers"
             android:summary="@string/import_stickers_summary"/>
-        <com.crossbowffs.usticker.AutoEditTextPreference
-            android:key="pref_sticker_dir"
-            android:title="@string/change_storage_location"/>
+        <Preference
+            android:key="pref_change_sticker_dir"
+            android:title="@string/change_sticker_dir"
+            android:summary="@string/change_sticker_dir_summary"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/about">
         <Preference

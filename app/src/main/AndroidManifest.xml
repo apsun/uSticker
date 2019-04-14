@@ -2,7 +2,6 @@
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.crossbowffs.usticker">
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <application
         android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher">
@@ -22,7 +21,7 @@
         </activity>
         <provider
             android:name=".StickerProvider"
-            android:authorities="com.crossbowffs.usticker.provider"
+            android:authorities="${applicationId}.provider"
             android:exported="true"
             android:grantUriPermissions="true"/>
         <meta-data

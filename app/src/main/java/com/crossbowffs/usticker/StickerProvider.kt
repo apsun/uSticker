@@ -4,6 +4,7 @@ import android.content.ContentProvider
 import android.content.ContentValues
 import android.net.Uri
 import android.os.ParcelFileDescriptor
+import android.provider.DocumentsContract
 import java.io.FileNotFoundException
 
 /**
@@ -12,14 +13,15 @@ import java.io.FileNotFoundException
  */
 class StickerProvider : ContentProvider() {
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {
-        val path = uri.path ?: return null
+        val path = uri.lastPathSegment ?: throw FileNotFoundException("Invalid URI: $uri")
         Klog.i("Requesting sticker: $path")
-        val file = StickerManager.getStickerFile(context!!, path) ?: return null
-        return try {
-            ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
-        } catch (e: FileNotFoundException) {
-            Klog.e("Could not find sticker: $path", e)
-            null
+        val stickerDir = StickerDir.get(context!!) ?: throw FileNotFoundException("Sticker directory not set")
+        val fileUri = DocumentsContract.buildDocumentUriUsingTree(stickerDir, path)
+        try {
+            return context!!.contentResolver.openFileDescriptor(fileUri, mode)
+        } catch (e: Exception) {
+            Klog.e("openFileDescriptor() failed", e)
+            throw e
         }
     }
 

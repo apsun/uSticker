@@ -3,59 +3,66 @@ package com.crossbowffs.usticker
 import com.google.firebase.appindexing.FirebaseAppIndex
 import com.google.firebase.appindexing.Indexable
 import com.google.firebase.appindexing.builders.Indexables
-import java.io.File
 
 /**
- * Updates the Firebase index with a new sticker map.
+ * Updates the Firebase index with a new list of sticker packs.
  */
 class FirebaseIndexUpdater {
     private val fbIndex = FirebaseAppIndex.getInstance()
 
     /**
-     * Generates a list of keywords for the sticker based on its
-     * file name. Currently, this splits on all non-alphanumeric
+     * Generates a list of keywords given a filename.
+     * Currently, this splits on all non-alphanumeric
      * characters and alpha-numeric boundaries.
      */
-    private fun getKeywords(fileName: String): Array<String> {
+    private fun getKeywords(fileName: String): List<String> {
         // First, split on any non-alphanumeric characters
         val nonSplitAlphaNum = fileName
             .split(Regex("[\\W_]"))
-            .filter { it.isNotBlank() }
+            .filter(String::isNotBlank)
 
         // Then, split patterns like abc123def to [abc, 123, def]
-        val splitAlphaNum = nonSplitAlphaNum.map {
+        return nonSplitAlphaNum.flatMap {
             Regex("[0-9]+|[a-zA-Z]+")
                 .findAll(it)
-                .map { it.value }
+                .map(MatchResult::value)
                 .toList()
-        }.flatten()
-
-        return splitAlphaNum.toTypedArray()
+        }
     }
 
     /**
-     * Converts a map of sticker files into a flattened list of
+     * Trims off the extension from a filename (e.g. foo.bar -> foo).
+     */
+    private fun getNameWithoutExtension(fileName: String): String {
+        return fileName.substringBeforeLast('.')
+    }
+
+    /**
+     * Converts a list of sticker packs into a list of
      * Indexable objects to pass to the Firebase indexer.
      */
-    private fun stickerMapToIndexables(stickerMap: Map<String, List<File>>): List<Indexable> {
-        return stickerMap.map { (packPath, stickerFiles) ->
-            val packName = stickerFiles[0].parentFile.name
-            val packUrl = "usticker://sticker/$packPath"
+    private fun stickerPacksToIndexables(stickerPacks: List<StickerPack>): List<Indexable> {
+        return stickerPacks.flatMap { stickerPack ->
+            val packName = stickerPack.path.lastOrNull() ?: "Stickers"
+            val packUri = stickerPack.getFirebaseUri()
+            val packKeywords = stickerPack.path.flatMap(this::getKeywords)
+            Klog.i("Importing $packName with ${stickerPack.stickers.size} stickers")
 
             // Create all stickers in the pack
-            val stickers = stickerFiles.map { stickerFile ->
+            val stickers = stickerPack.stickers.map { sticker ->
+                val keywords = packKeywords + getKeywords(getNameWithoutExtension(sticker.name))
                 Indexables.stickerBuilder()
-                    .setName(stickerFile.name)
-                    .setImage("content://${StickerManager.PROVIDER_AUTHORITY}/$packPath/${stickerFile.name}")
-                    .setKeywords(*(getKeywords(packName) + getKeywords(stickerFile.nameWithoutExtension)))
-                    .setUrl("usticker://sticker/$packPath/${stickerFile.name}")
+                    .setName(sticker.name)
+                    .setImage(sticker.getFileUri().toString())
+                    .setKeywords(*keywords.toTypedArray())
+                    .setUrl(sticker.getFirebaseUri(packUri).toString())
             }
 
             // Then create the sticker pack
             val pack = Indexables.stickerPackBuilder()
                 .setName(packName)
-                .setImage("content://${StickerManager.PROVIDER_AUTHORITY}/$packPath/${stickerFiles[0].name}")
-                .setUrl(packUrl)
+                .setImage(stickerPack.stickers[0].getFileUri().toString())
+                .setUrl(packUri.toString())
                 .setHasSticker(*stickers.toTypedArray())
                 .setMetadata(Indexable.Metadata.Builder().setWorksOffline(true))
                 .build()
@@ -64,16 +71,17 @@ class FirebaseIndexUpdater {
             stickers.map { it
                 .setIsPartOf(Indexables.stickerPackBuilder()
                     .setName(packName)
-                    .setUrl(packUrl))
+                    .setUrl(packUri.toString()))
                 .setMetadata(Indexable.Metadata.Builder().setWorksOffline(true))
                 .build()
             } + listOf(pack)
-        }.flatten()
+        }
     }
 
     /**
      * Performs batched updates of the Firebase sticker index.
-     * Calls the provided callback on completion.
+     * Calls the provided callback on completion with the number
+     * of sticker files imported.
      */
     private fun addIndexables(indexableList: List<Indexable>, offset: Int, callback: (Result<Int>) -> Unit) {
         val step = Math.min(indexableList.size - offset, 250)
@@ -87,10 +95,10 @@ class FirebaseIndexUpdater {
     }
 
     /**
-     * Replaces all indexed stickers with the given sticker map.
+     * Replaces all indexed stickers with the given sticker pack list.
      */
-    fun executeWithCallback(stickerMap: Map<String, List<File>>, callback: (Result<Int>) -> Unit) {
-        val indexables = stickerMapToIndexables(stickerMap)
+    fun executeWithCallback(stickerPacks: List<StickerPack>, callback: (Result<Int>) -> Unit) {
+        val indexables = stickerPacksToIndexables(stickerPacks)
         fbIndex.removeAll()
             .addOnSuccessListener { addIndexables(indexables, 0, callback) }
             .addOnFailureListener { callback(Result.Err(it)) }

@@ -1,5 +1,6 @@
 package com.crossbowffs.usticker
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
 import android.app.ProgressDialog
@@ -8,22 +9,49 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceFragment
+import android.provider.DocumentsContract
 import android.text.Html
 import android.util.Log
 import android.widget.Toast
-import java.io.FileNotFoundException
 
 class SettingsFragment : PreferenceFragment() {
     companion object {
-        private const val TWITTER_URL = "https://twitter.com/crossbowffs"
-        private const val GITHUB_URL = "https://github.com/apsun/uSticker"
+        private const val REQUEST_SELECT_STICKER_DIR = 2333
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (resultCode != Activity.RESULT_OK || data == null) {
+            return
+        }
+
+        if (requestCode != REQUEST_SELECT_STICKER_DIR) {
+            return
+        }
+
+        val flags = Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
+        if (data.flags and flags != flags) {
+            Klog.e("FLAG_GRANT_PERSISTABLE_URI_PERMISSION or FLAG_GRANT_READ_URI_PERMISSION not set")
+            Toast.makeText(activity, R.string.failed_to_obtain_read_permissions, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        try {
+            StickerDir.set(activity, data.data!!)
+        } catch (e: SecurityException) {
+            showStacktraceDialog(e)
+            return
+        }
+
+        importStickers()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        StickerManager.initStickerDir(activity)
         addPreferencesFromResource(R.xml.settings)
 
         findPreference("pref_import_stickers").setOnPreferenceClickListener {
@@ -31,15 +59,9 @@ class SettingsFragment : PreferenceFragment() {
             true
         }
 
-        findPreference("pref_sticker_dir").setOnPreferenceChangeListener { _, newValue ->
-            val stickerDir = newValue as String
-            try {
-                StickerManager.validateStickerDir(stickerDir)
-                true
-            } catch (e: Exception) {
-                showInvalidStickerDirDialog(newValue, e)
-                false
-            }
+        findPreference("pref_change_sticker_dir").setOnPreferenceClickListener {
+            selectStickerDir(REQUEST_SELECT_STICKER_DIR)
+            true
         }
 
         findPreference("pref_about_help").setOnPreferenceClickListener {
@@ -48,12 +70,12 @@ class SettingsFragment : PreferenceFragment() {
         }
 
         findPreference("pref_about_developer").setOnPreferenceClickListener {
-            startBrowserActivity(TWITTER_URL)
+            startBrowserActivity("https://twitter.com/crossbowffs")
             true
         }
 
         findPreference("pref_about_github").setOnPreferenceClickListener {
-            startBrowserActivity(GITHUB_URL)
+            startBrowserActivity("https://github.com/apsun/uSticker")
             true
         }
 
@@ -97,25 +119,11 @@ class SettingsFragment : PreferenceFragment() {
         clipboard.setPrimaryClip(clip)
     }
 
-    private fun showInvalidStickerDirDialog(dir: String, e: Exception) {
-        val message = if (e is FileNotFoundException) {
-            getString(R.string.sticker_dir_not_found, dir)
-        } else {
-            e.message
-        }
-
-        AlertDialog.Builder(activity)
-            .setTitle(R.string.invalid_sticker_dir)
-            .setMessage(message)
-            .setPositiveButton(R.string.ok, null)
-            .show()
-    }
-
     private fun showStacktraceDialog(e: Throwable) {
         val stacktrace = Log.getStackTraceString(e)
         AlertDialog.Builder(activity)
             .setTitle(R.string.import_failed_title)
-            .setMessage(stacktrace)
+            .setMessage(getString(R.string.import_failed_message) + stacktrace)
             .setNeutralButton(R.string.copy) { _, _ ->
                 copyToClipboard(stacktrace)
                 Toast.makeText(activity, R.string.stacktrace_copied, Toast.LENGTH_SHORT).show()
@@ -131,17 +139,39 @@ class SettingsFragment : PreferenceFragment() {
         Toast.makeText(activity, message, Toast.LENGTH_SHORT).show()
     }
 
+    private fun onNeedInitStickerDir() {
+        Toast.makeText(activity, R.string.init_sticker_dir, Toast.LENGTH_SHORT).show()
+        selectStickerDir(REQUEST_SELECT_STICKER_DIR)
+    }
+
     private fun onImportFailed(dialog: Dialog, err: Exception) {
-        dialog.dismiss()
         Klog.e("Failed to import stickers", err)
+        dialog.dismiss()
+
+        if (err is SecurityException) {
+            onNeedInitStickerDir()
+            return
+        }
+
         showStacktraceDialog(err)
     }
 
+    private fun selectStickerDir(requestCode: Int) {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val stickerDir = StickerDir.get(activity)
+            if (stickerDir != null) {
+                intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, stickerDir)
+            }
+        }
+        startActivityForResult(intent, requestCode)
+    }
+
     private fun importStickers() {
-        val stickerDir = try {
-            StickerManager.getStickerDir(activity)
-        } catch (e: Exception) {
-            showInvalidStickerDirDialog(StickerManager.getConfigStickerDir(activity), e)
+        val stickerDir = StickerDir.get(activity)
+        if (stickerDir == null) {
+            Klog.i("Sticker directory not configured")
+            onNeedInitStickerDir()
             return
         }
 
@@ -152,7 +182,7 @@ class SettingsFragment : PreferenceFragment() {
             show()
         }
 
-        StickerScanner().executeWithCallback(stickerDir) { scanResult ->
+        StickerScanner(activity.contentResolver).executeWithCallback(stickerDir) { scanResult ->
             when (scanResult) {
                 is Result.Err -> onImportFailed(dialog, scanResult.err)
                 is Result.Ok -> FirebaseIndexUpdater().executeWithCallback(scanResult.value) { updateResult ->

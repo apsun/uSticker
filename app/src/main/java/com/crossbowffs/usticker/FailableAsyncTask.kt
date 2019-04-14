@@ -15,7 +15,16 @@ abstract class FailableAsyncTask<TParam, TResult> : AsyncTask<TParam, Unit, Resu
      */
     abstract fun run(arg: TParam): TResult
 
-    override fun doInBackground(vararg args: TParam): Result<TResult> {
+    /**
+     * Executes the AsyncTask with a single parameter and a callback to
+     * be called on the main thread when the AsyncTask completes.
+     */
+    fun executeWithCallback(arg: TParam, callback: (Result<TResult>) -> Unit) {
+        this.callback = callback
+        execute(arg)
+    }
+
+    final override fun doInBackground(vararg args: TParam): Result<TResult> {
         return try {
             Result.Ok(run(args[0]))
         } catch (e: Exception) {
@@ -23,15 +32,10 @@ abstract class FailableAsyncTask<TParam, TResult> : AsyncTask<TParam, Unit, Resu
         }
     }
 
-    override fun onPostExecute(result: Result<TResult>) {
+    final override fun onPostExecute(result: Result<TResult>) {
         val callback = this.callback
         if (callback != null) {
             callback(result)
         }
-    }
-
-    fun executeWithCallback(arg: TParam, callback: (Result<TResult>) -> Unit) {
-        this.callback = callback
-        execute(arg)
     }
 }
