@@ -34,7 +34,8 @@ class StickerScanner(private val resolver: ContentResolver) : FailableAsyncTask<
             arrayOf(
                 DocumentsContract.Document.COLUMN_DOCUMENT_ID,
                 DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-                DocumentsContract.Document.COLUMN_MIME_TYPE),
+                DocumentsContract.Document.COLUMN_MIME_TYPE
+            ),
             null,
             null,
             null
