@@ -15,6 +15,7 @@ class StickerProvider : ContentProvider() {
     @Deprecated("Only used for loading legacy paths pre-1.5.0")
     private fun legacyOpenFile(uri: Uri): ParcelFileDescriptor? {
         val path = uri.path ?: return null
+        Klog.i("Requesting legacy sticker: $path")
         val file = StickerManager.getStickerFile(context!!, path) ?: return null
         return try {
             ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
@@ -28,7 +29,7 @@ class StickerProvider : ContentProvider() {
         // Previously, due to my laziness, I left the ./ prefix at the start
         // of all Firebase URI paths. Looks like that laziness has become useful;
         // we can use it to distinguish old-style (pre-SAF) from new-style URIs.
-        if (uri.path?.startsWith("./") == true) {
+        if (uri.path?.startsWith("/./") == true) {
             return legacyOpenFile(uri)
         }
 
