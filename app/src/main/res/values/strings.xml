@@ -93,7 +93,6 @@
     </string>
     <string name="change_sticker_dir">Change sticker directory</string>
     <string name="change_sticker_dir_summary">Select a new directory to search for stickers</string>
-    <string name="storage_permissions_required">Storage permissions required</string>
     <string name="stacktrace_copied">Stacktrace copied to clipboard</string>
     <string name="init_sticker_dir">Please select the directory containing your stickers</string>
     <string name="failed_to_obtain_read_permissions">Failed to obtain read permissions</string>

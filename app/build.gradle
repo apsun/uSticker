@@ -23,6 +23,12 @@ android {
         }
 
         release {
+            postprocessing {
+                removeUnusedCode true
+                removeUnusedResources true
+                obfuscate false
+                optimizeCode true
+            }
             buildConfigField('int', 'LOG_LEVEL', '4')
         }
     }
