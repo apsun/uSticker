@@ -29,9 +29,9 @@
     <string name="changelog_text">
         <![CDATA[
             <big><b>1.5.0</b></big><br>
-            Use Storage Access Framework to select sticker directory
-            for Android Q compatibility. This also means you can now
-            import stickers from an external SD card if you want.
+            Use Storage Access Framework to select sticker directory.
+            This means you can now import stickers from an external
+            SD card. Also removed support for Android 4.4.
             <br><br>
 
             <big><b>1.4.4</b></big><br>
