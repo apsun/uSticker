@@ -18,12 +18,12 @@ class FirebaseIndexUpdater {
     private fun getKeywords(fileName: String): List<String> {
         // First, split on any non-alphanumeric characters
         val nonSplitAlphaNum = fileName
-            .split(Regex("[\\W_]"))
+            .split(Regex("[^\\p{N}\\p{L}]"))
             .filter(String::isNotBlank)
 
         // Then, split patterns like abc123def to [abc, 123, def]
         return nonSplitAlphaNum.flatMap {
-            Regex("[0-9]+|[a-zA-Z]+")
+            Regex("\\p{N}+|\\p{L}+")
                 .findAll(it)
                 .map(MatchResult::value)
                 .toList()
