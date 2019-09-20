@@ -132,8 +132,19 @@ class SettingsFragment : PreferenceFragment() {
             .show()
     }
 
+    private fun dismissDialog(dialog: Dialog) {
+        // This is an ugly hack, but Android is stupid and I can't figure
+        // out how to properly solve this so let's just do this to at least
+        // stop getting exceptions
+        try {
+            dialog.dismiss()
+        } catch (e: IllegalArgumentException) {
+            // Don't care
+        }
+    }
+
     private fun onImportSuccess(dialog: Dialog, numStickers: Int) {
-        dialog.dismiss()
+        dismissDialog(dialog)
         Klog.i("Successfully imported $numStickers stickers")
         val message = getString(R.string.import_success_toast, numStickers)
         Toast.makeText(activity, message, Toast.LENGTH_SHORT).show()
@@ -146,7 +157,7 @@ class SettingsFragment : PreferenceFragment() {
 
     private fun onImportFailed(dialog: Dialog, err: Exception) {
         Klog.e("Failed to import stickers", err)
-        dialog.dismiss()
+        dismissDialog(dialog)
 
         if (err is SecurityException) {
             onNeedInitStickerDir()
