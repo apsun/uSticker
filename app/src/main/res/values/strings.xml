@@ -7,7 +7,6 @@
     <string name="close">Close</string>
     <string name="copy">Copy</string>
     <string name="help">Help</string>
-    <string name="developer">Developer</string>
     <string name="github">GitHub</string>
     <string name="version">Version</string>
     <string name="help_summary">View app usage instructions</string>
@@ -80,7 +79,6 @@
             Initial release.
         ]]>
     </string>
-    <string name="developer_summary">Andrew Sun (@crossbowffs)</string>
     <string name="github_summary">github.com/apsun/uSticker</string>
     <string name="import_stickers">Import stickers to Gboard</string>
     <string name="import_stickers_summary">Press after adding stickers or changing settings</string>

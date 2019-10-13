@@ -69,11 +69,6 @@ class SettingsFragment : PreferenceFragment() {
             true
         }
 
-        findPreference("pref_about_developer").setOnPreferenceClickListener {
-            startBrowserActivity("https://twitter.com/crossbowffs")
-            true
-        }
-
         findPreference("pref_about_github").setOnPreferenceClickListener {
             startBrowserActivity("https://github.com/apsun/uSticker")
             true

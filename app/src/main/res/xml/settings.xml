@@ -17,10 +17,6 @@
             android:title="@string/help"
             android:summary="@string/help_summary"/>
         <Preference
-            android:key="pref_about_developer"
-            android:title="@string/developer"
-            android:summary="@string/developer_summary"/>
-        <Preference
             android:key="pref_about_github"
             android:title="@string/github"
             android:summary="@string/github_summary"/>
