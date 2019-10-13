@@ -12,27 +12,7 @@ import java.io.FileNotFoundException
  * Only supports reading files via openFile().
  */
 class StickerProvider : ContentProvider() {
-    @Deprecated("Only used for loading legacy paths pre-1.5.0")
-    private fun legacyOpenFile(uri: Uri): ParcelFileDescriptor? {
-        val path = uri.path ?: return null
-        Klog.i("Requesting legacy sticker: $path")
-        val file = StickerManager.getStickerFile(context!!, path) ?: return null
-        return try {
-            ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
-        } catch (e: FileNotFoundException) {
-            Klog.e("Could not find sticker: $path", e)
-            null
-        }
-    }
-
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {
-        // Previously, due to my laziness, I left the ./ prefix at the start
-        // of all Firebase URI paths. Looks like that laziness has become useful;
-        // we can use it to distinguish old-style (pre-SAF) from new-style URIs.
-        if (uri.path?.startsWith("/./") == true) {
-            return legacyOpenFile(uri)
-        }
-
         val path = uri.lastPathSegment ?: throw FileNotFoundException("Invalid URI: $uri")
         Klog.i("Requesting sticker: $path")
         val stickerDir = StickerDir.get(context!!) ?: throw FileNotFoundException("Sticker directory not set")
