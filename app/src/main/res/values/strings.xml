@@ -5,7 +5,8 @@
     <string name="actions">Actions</string>
     <string name="about">About</string>
     <string name="close">Close</string>
-    <string name="copy">Copy</string>
+    <string name="ignore">Ignore</string>
+    <string name="report">Report on GitHub</string>
     <string name="help">Help</string>
     <string name="github">GitHub</string>
     <string name="version">Version</string>
@@ -27,6 +28,11 @@
     <string name="changelog">Changelog</string>
     <string name="changelog_text">
         <![CDATA[
+            <big><b>1.5.2</b></big><br>
+            No longer crashes when failing to find a file browser app.
+            Also added a button to make reporting bugs easier.
+            <br><br>
+
             <big><b>1.5.1</b></big><br>
             Changed sticker keywords (for search) to be Unicode-aware.
             <br><br>
@@ -82,20 +88,35 @@
     <string name="github_summary">github.com/apsun/uSticker</string>
     <string name="import_stickers">Import stickers to Gboard</string>
     <string name="import_stickers_summary">Press after adding stickers or changing settings</string>
+    <string name="report_bug">Report a bug</string>
+    <string name="report_bug_summary">Submit an issue on GitHub (requires login)</string>
     <string name="importing_stickers">Importing stickers to Gboard…</string>
     <string name="import_success_toast">Successfully imported %1$d sticker(s)</string>
     <string name="import_failed_title">Import failed</string>
     <string name="import_failed_message">
-        Sticker import failed. Please copy the stacktrace below and submit an
-        issue on GitHub with the stacktrace attached, along with a description
-        of your setup. Thank you!
-        \n\n
-        ---
-        \n\n
+        An unknown error occurred while importing stickers. If you would like to help improve
+        uSticker, please submit an issue on GitHub using the button below. Thank you!\n\n%1$s
     </string>
     <string name="change_sticker_dir">Change sticker directory</string>
     <string name="change_sticker_dir_summary">Select a new directory to search for stickers</string>
-    <string name="stacktrace_copied">Stacktrace copied to clipboard</string>
     <string name="init_sticker_dir">Please select the directory containing your stickers</string>
     <string name="failed_to_obtain_read_permissions">Failed to obtain read permissions</string>
+    <string name="cannot_find_file_browser">
+        Cannot find an app that supports ACTION_OPEN_DOCUMENT_TREE. If you disabled the
+        built-in Android file browser, please re-enable it to use uSticker.
+    </string>
+    <string name="issue_template">
+        Replace this line with a detailed description of your problem.\n\n---
+        \n\nApp version: %1$s
+        \nGboard version: %2$s
+        \nAndroid version: %3$s
+    </string>
+    <string name="issue_template_stacktrace">
+        Replace this line with any extra details that you may have.\n\n---
+        \n\nApp version: %1$s
+        \nGboard version: %2$s
+        \nAndroid version: %3$s
+        \nException stacktrace:
+        \n```\n%4$s```
+    </string>
 </resources>

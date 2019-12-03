@@ -17,6 +17,10 @@
             android:title="@string/help"
             android:summary="@string/help_summary"/>
         <Preference
+            android:key="pref_about_report_bug"
+            android:title="@string/report_bug"
+            android:summary="@string/report_bug_summary"/>
+        <Preference
             android:key="pref_about_github"
             android:title="@string/github"
             android:summary="@string/github_summary"/>

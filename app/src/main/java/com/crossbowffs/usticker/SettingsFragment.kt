@@ -4,10 +4,9 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
 import android.app.ProgressDialog
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
+import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -60,7 +59,7 @@ class SettingsFragment : PreferenceFragment() {
         }
 
         findPreference("pref_change_sticker_dir").setOnPreferenceClickListener {
-            selectStickerDir(REQUEST_SELECT_STICKER_DIR)
+            selectStickerDir()
             true
         }
 
@@ -69,13 +68,18 @@ class SettingsFragment : PreferenceFragment() {
             true
         }
 
+        findPreference("pref_about_report_bug").setOnPreferenceClickListener {
+            startNewIssueActivity(null)
+            true
+        }
+
         findPreference("pref_about_github").setOnPreferenceClickListener {
-            startBrowserActivity("https://github.com/apsun/uSticker")
+            startGitHubActivity()
             true
         }
 
         findPreference("pref_about_version").apply {
-            setSummary("${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
+            setSummary(getAppVersion())
             setOnPreferenceClickListener {
                 showChangelogDialog()
                 true
@@ -83,9 +87,43 @@ class SettingsFragment : PreferenceFragment() {
         }
     }
 
+    private fun getAppVersion(): String {
+        return "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
+    }
+
+    private fun getGboardVersion(): String? {
+        val pkg = try {
+            activity.packageManager.getPackageInfo("com.google.android.inputmethod.latin", 0)
+        } catch (e: PackageManager.NameNotFoundException) {
+            return null
+        }
+        return "${pkg.versionName} (${pkg.versionCode})"
+    }
+
+    private fun getIssueTemplate(stacktrace: String?): String {
+        val appVersion = getAppVersion()
+        val gboardVersion = getGboardVersion() ?: "N/A"
+        val osVersion = "${Build.VERSION.RELEASE} (API${Build.VERSION.SDK_INT})"
+        val fmt = if (stacktrace == null) {
+            R.string.issue_template
+        } else {
+            R.string.issue_template_stacktrace
+        }
+        return getString(fmt, appVersion, gboardVersion, osVersion, stacktrace)
+    }
+
     private fun startBrowserActivity(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         startActivity(intent)
+    }
+
+    private fun startGitHubActivity() {
+        startBrowserActivity("https://github.com/apsun/uSticker")
+    }
+
+    private fun startNewIssueActivity(stacktrace: String?) {
+        val template = Uri.encode(getIssueTemplate(stacktrace))
+        startBrowserActivity("https://github.com/apsun/uSticker/issues/new?body=$template")
     }
 
     private fun getHtmlString(resId: Int): CharSequence {
@@ -108,22 +146,15 @@ class SettingsFragment : PreferenceFragment() {
             .show()
     }
 
-    private fun copyToClipboard(text: String) {
-        val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText(null, text)
-        clipboard.setPrimaryClip(clip)
-    }
-
     private fun showStacktraceDialog(e: Throwable) {
         val stacktrace = Log.getStackTraceString(e)
         AlertDialog.Builder(activity)
             .setTitle(R.string.import_failed_title)
-            .setMessage(getString(R.string.import_failed_message) + stacktrace)
-            .setNeutralButton(R.string.copy) { _, _ ->
-                copyToClipboard(stacktrace)
-                Toast.makeText(activity, R.string.stacktrace_copied, Toast.LENGTH_SHORT).show()
+            .setMessage(getString(R.string.import_failed_message, e))
+            .setPositiveButton(R.string.report) { _, _ ->
+                startNewIssueActivity(stacktrace)
             }
-            .setPositiveButton(R.string.close, null)
+            .setNeutralButton(R.string.ignore, null)
             .show()
     }
 
@@ -147,7 +178,7 @@ class SettingsFragment : PreferenceFragment() {
 
     private fun onNeedInitStickerDir() {
         Toast.makeText(activity, R.string.init_sticker_dir, Toast.LENGTH_SHORT).show()
-        selectStickerDir(REQUEST_SELECT_STICKER_DIR)
+        selectStickerDir()
     }
 
     private fun onImportFailed(dialog: Dialog, err: Exception) {
@@ -162,7 +193,7 @@ class SettingsFragment : PreferenceFragment() {
         showStacktraceDialog(err)
     }
 
-    private fun selectStickerDir(requestCode: Int) {
+    private fun selectStickerDir() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val stickerDir = StickerDir.get(activity)
@@ -170,7 +201,12 @@ class SettingsFragment : PreferenceFragment() {
                 intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, stickerDir)
             }
         }
-        startActivityForResult(intent, requestCode)
+
+        try {
+            startActivityForResult(intent, REQUEST_SELECT_STICKER_DIR)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(activity, R.string.cannot_find_file_browser, Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun importStickers() {
