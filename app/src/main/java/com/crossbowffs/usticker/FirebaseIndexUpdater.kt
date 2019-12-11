@@ -8,6 +8,11 @@ import com.google.firebase.appindexing.builders.Indexables
  * Updates the Firebase index with a new list of sticker packs.
  */
 class FirebaseIndexUpdater {
+    companion object {
+        private val NON_ALPHA_NUM_CHAR_REGEX = Regex("[^\\p{N}\\p{L}]")
+        private val ALPHA_OR_NUM_REGEX = Regex("\\p{N}+|\\p{L}+")
+    }
+
     private val fbIndex = FirebaseAppIndex.getInstance()
 
     /**
@@ -18,12 +23,12 @@ class FirebaseIndexUpdater {
     private fun getKeywords(fileName: String): List<String> {
         // First, split on any non-alphanumeric characters
         val nonSplitAlphaNum = fileName
-            .split(Regex("[^\\p{N}\\p{L}]"))
+            .split(NON_ALPHA_NUM_CHAR_REGEX)
             .filter(String::isNotBlank)
 
         // Then, split patterns like abc123def to [abc, 123, def]
         return nonSplitAlphaNum.flatMap {
-            Regex("\\p{N}+|\\p{L}+")
+            ALPHA_OR_NUM_REGEX
                 .findAll(it)
                 .map(MatchResult::value)
                 .toList()
