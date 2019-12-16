@@ -230,7 +230,7 @@ class SettingsFragment : PreferenceFragment() {
                 is Result.Ok -> FirebaseIndexUpdater().executeWithCallback(scanResult.value) { updateResult ->
                     when (updateResult) {
                         is Result.Err -> onImportFailed(dialog, updateResult.err)
-                        is Result.Ok -> onImportSuccess(dialog, updateResult.value)
+                        is Result.Ok -> onImportSuccess(dialog, scanResult.value.sumBy { it.stickers.size })
                     }
                 }
             }

@@ -91,7 +91,7 @@ class FirebaseIndexUpdater {
     private fun addIndexables(
         indexableList: List<Indexable>,
         offset: Int,
-        callback: (Result<Int>) -> Unit)
+        callback: (Result<Unit>) -> Unit)
     {
         val step = Math.min(indexableList.size - offset, 250)
         if (step > 0) {
@@ -99,14 +99,14 @@ class FirebaseIndexUpdater {
                 .addOnSuccessListener { addIndexables(indexableList, offset + step, callback) }
                 .addOnFailureListener { callback(Result.Err(it)) }
         } else {
-            callback(Result.Ok(indexableList.size))
+            callback(Result.Ok(Unit))
         }
     }
 
     /**
      * Replaces all indexed stickers with the given sticker pack list.
      */
-    fun executeWithCallback(stickerPacks: List<StickerPack>, callback: (Result<Int>) -> Unit) {
+    fun executeWithCallback(stickerPacks: List<StickerPack>, callback: (Result<Unit>) -> Unit) {
         val indexables = stickerPacksToIndexables(stickerPacks)
         fbIndex.removeAll()
             .addOnSuccessListener { addIndexables(indexables, 0, callback) }
