@@ -28,6 +28,11 @@
     <string name="changelog">Changelog</string>
     <string name="changelog_text">
         <![CDATA[
+            <big><b>1.5.3</b></big><br>
+            Removed unused storage permission. Fixed incorrect sticker
+            count calculation.
+            <br><br>
+
             <big><b>1.5.2</b></big><br>
             No longer crashes when failing to find a file browser app.
             Also added a button to make reporting bugs easier.
