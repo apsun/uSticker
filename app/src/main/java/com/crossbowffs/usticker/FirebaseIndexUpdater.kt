@@ -11,6 +11,7 @@ class FirebaseIndexUpdater {
     companion object {
         private val NON_ALPHA_NUM_CHAR_REGEX = Regex("[^\\p{N}\\p{L}]")
         private val ALPHA_OR_NUM_REGEX = Regex("\\p{N}+|\\p{L}+")
+        private const val MAX_STICKERS_PER_PACK = 100
     }
 
     private val fbIndex = FirebaseAppIndex.getInstance()
@@ -51,7 +52,11 @@ class FirebaseIndexUpdater {
             val packName = stickerPack.path.lastOrNull() ?: "Stickers"
             val packUri = stickerPack.getFirebaseUri()
             val packKeywords = stickerPack.path.flatMap(this::getKeywords)
-            Klog.i("Importing $packName with ${stickerPack.stickers.size} stickers")
+            val stickerCount = stickerPack.stickers.size
+            if (stickerCount > MAX_STICKERS_PER_PACK) {
+                throw TooManyStickersException(stickerCount, MAX_STICKERS_PER_PACK, stickerPack.path)
+            }
+            Klog.i("Importing $packName with $stickerCount sticker(s)")
 
             // Create all stickers in the pack
             val stickers = stickerPack.stickers.map { sticker ->
@@ -107,7 +112,13 @@ class FirebaseIndexUpdater {
      * Replaces all indexed stickers with the given sticker pack list.
      */
     fun executeWithCallback(stickerPacks: List<StickerPack>, callback: (Result<Unit>) -> Unit) {
-        val indexables = stickerPacksToIndexables(stickerPacks)
+        val indexables = try {
+            stickerPacksToIndexables(stickerPacks)
+        } catch (e: Exception) {
+            callback(Result.Err(e))
+            return
+        }
+
         fbIndex.removeAll()
             .addOnSuccessListener { addIndexables(indexables, 0, callback) }
             .addOnFailureListener { callback(Result.Err(it)) }

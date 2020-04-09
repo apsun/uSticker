@@ -124,4 +124,11 @@
         \nException stacktrace:
         \n```\n%4$s```
     </string>
+    <string name="too_many_stickers_fmt">
+        Only %1$d stickers per pack are supported by Gboard. You have
+        %2$d stickers in %3$s. Please move some of your stickers to
+        subdirectories to create new sticker packs.
+    </string>
+    <string name="too_many_stickers_dir_root">the root sticker directory</string>
+    <string name="too_many_stickers_dir_path">the directory \'%1$s\'</string>
 </resources>

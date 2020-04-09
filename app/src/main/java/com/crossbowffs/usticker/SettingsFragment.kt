@@ -146,6 +146,20 @@ class SettingsFragment : PreferenceFragment() {
             .show()
     }
 
+    private fun showTooManyStickersErrorDialog(e: TooManyStickersException) {
+        val userPath = if (e.path.isEmpty()) {
+            getString(R.string.too_many_stickers_dir_root)
+        } else {
+            getString(R.string.too_many_stickers_dir_path, e.path.joinToString("/"))
+        }
+        val message = getString(R.string.too_many_stickers_fmt, e.limit, e.count, userPath)
+        AlertDialog.Builder(activity)
+            .setTitle(R.string.import_failed_title)
+            .setMessage(message)
+            .setPositiveButton(R.string.close, null)
+            .show()
+    }
+
     private fun showStacktraceDialog(e: Throwable) {
         val stacktrace = Log.getStackTraceString(e)
         AlertDialog.Builder(activity)
@@ -184,6 +198,11 @@ class SettingsFragment : PreferenceFragment() {
     private fun onImportFailed(dialog: Dialog, err: Exception) {
         Klog.e("Failed to import stickers", err)
         dismissDialog(dialog)
+
+        if (err is TooManyStickersException) {
+            showTooManyStickersErrorDialog(err)
+            return
+        }
 
         if (err is SecurityException) {
             onNeedInitStickerDir()
