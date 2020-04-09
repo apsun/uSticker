@@ -169,10 +169,10 @@ class SettingsFragment : PreferenceFragment() {
         AlertDialog.Builder(activity)
             .setTitle(R.string.import_failed_title)
             .setMessage(getString(R.string.import_failed_message, e))
-            .setPositiveButton(R.string.report) { _, _ ->
+            .setPositiveButton(R.string.close, null)
+            .setNeutralButton(R.string.report) { _, _ ->
                 reportBug(stacktrace)
             }
-            .setNeutralButton(R.string.ignore, null)
             .show()
     }
 
