@@ -4,8 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
 import android.app.ProgressDialog
-import android.content.ActivityNotFoundException
-import android.content.Intent
+import android.content.*
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -68,11 +67,6 @@ class SettingsFragment : PreferenceFragment() {
             true
         }
 
-        findPreference("pref_about_report_bug").setOnPreferenceClickListener {
-            startNewIssueActivity(null)
-            true
-        }
-
         findPreference("pref_about_github").setOnPreferenceClickListener {
             startGitHubActivity()
             true
@@ -121,9 +115,16 @@ class SettingsFragment : PreferenceFragment() {
         startBrowserActivity("https://github.com/apsun/uSticker")
     }
 
-    private fun startNewIssueActivity(stacktrace: String?) {
-        val template = Uri.encode(getIssueTemplate(stacktrace))
-        startBrowserActivity("https://github.com/apsun/uSticker/issues/new?body=$template")
+    private fun copyToClipboard(text: String) {
+        val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText(null, text)
+        clipboard.setPrimaryClip(clip)
+    }
+
+    private fun reportBug(stacktrace: String?) {
+        val template = getIssueTemplate(stacktrace)
+        copyToClipboard(template)
+        Toast.makeText(activity, R.string.issue_template_copied, Toast.LENGTH_SHORT).show()
     }
 
     private fun getHtmlString(resId: Int): CharSequence {
@@ -135,6 +136,9 @@ class SettingsFragment : PreferenceFragment() {
             .setTitle(R.string.help)
             .setMessage(getHtmlString(R.string.help_text))
             .setPositiveButton(R.string.got_it, null)
+            .setNeutralButton(R.string.report) { _, _ ->
+                reportBug(null)
+            }
             .show()
     }
 
@@ -166,7 +170,7 @@ class SettingsFragment : PreferenceFragment() {
             .setTitle(R.string.import_failed_title)
             .setMessage(getString(R.string.import_failed_message, e))
             .setPositiveButton(R.string.report) { _, _ ->
-                startNewIssueActivity(stacktrace)
+                reportBug(stacktrace)
             }
             .setNeutralButton(R.string.ignore, null)
             .show()

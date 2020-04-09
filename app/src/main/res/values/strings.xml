@@ -6,7 +6,7 @@
     <string name="about">About</string>
     <string name="close">Close</string>
     <string name="ignore">Ignore</string>
-    <string name="report">Report on GitHub</string>
+    <string name="report">Report bug</string>
     <string name="help">Help</string>
     <string name="github">GitHub</string>
     <string name="version">Version</string>
@@ -93,8 +93,6 @@
     <string name="github_summary">github.com/apsun/uSticker</string>
     <string name="import_stickers">Import stickers to Gboard</string>
     <string name="import_stickers_summary">Press after adding stickers or changing settings</string>
-    <string name="report_bug">Report a bug</string>
-    <string name="report_bug_summary">Submit an issue on GitHub (requires login)</string>
     <string name="importing_stickers">Importing stickers to Gboard…</string>
     <string name="import_success_toast">Successfully imported %1$d sticker(s)</string>
     <string name="import_failed_title">Import failed</string>
@@ -111,19 +109,18 @@
         built-in Android file browser, please re-enable it to use uSticker.
     </string>
     <string name="issue_template">
-        Replace this line with a detailed description of your problem.\n\n---
-        \n\nApp version: %1$s
+        uSticker version: %1$s
         \nGboard version: %2$s
         \nAndroid version: %3$s
     </string>
     <string name="issue_template_stacktrace">
-        Replace this line with any extra details that you may have.\n\n---
-        \n\nApp version: %1$s
+        uSticker version: %1$s
         \nGboard version: %2$s
         \nAndroid version: %3$s
         \nException stacktrace:
         \n```\n%4$s```
     </string>
+    <string name="issue_template_copied">Details copied to clipboard. Please submit an issue on GitHub.</string>
     <string name="too_many_stickers_fmt">
         Only %1$d stickers per pack are supported by Gboard. You have
         %2$d stickers in %3$s. Please move some of your stickers to
