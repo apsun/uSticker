@@ -28,6 +28,12 @@
     <string name="changelog">Changelog</string>
     <string name="changelog_text">
         <![CDATA[
+            <big><b>1.5.4</b></big><br>
+            Gboard now limits you to 100 stickers per pack, so added a
+            validation check for that. Also removed the bug report
+            button as it was encouraging spam.
+            <br><br>
+
             <big><b>1.5.3</b></big><br>
             Removed unused storage permission. Fixed incorrect sticker
             count calculation.
