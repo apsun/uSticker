@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="pref_sticker_sort_order_entries">
+        <item>@string/sticker_sort_order_none</item>
+        <item>@string/sticker_sort_order_alphabetical</item>
+    </string-array>
+    <string-array name="pref_sticker_sort_order_values">
+        <item>NONE</item>
+        <item>ALPHABETICAL</item>
+    </string-array>
+</resources>

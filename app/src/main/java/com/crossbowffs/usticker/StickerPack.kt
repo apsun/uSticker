@@ -6,7 +6,7 @@ import android.net.Uri
  * Represents a collection of stickers with an associated filesystem path.
  */
 class StickerPack(
-    val path: List<String>,
+    val path: String,
     val stickers: List<Sticker>)
 {
     /**
@@ -18,7 +18,7 @@ class StickerPack(
         return Uri.Builder()
             .scheme("usticker")
             .authority("sticker")
-            .apply { path.forEach { appendPath(it) } }
+            .path(path)
             .build()
     }
 }

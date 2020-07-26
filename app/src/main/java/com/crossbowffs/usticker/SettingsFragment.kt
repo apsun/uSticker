@@ -39,7 +39,7 @@ class SettingsFragment : PreferenceFragment() {
         }
 
         try {
-            StickerDir.set(activity, data.data!!)
+            Prefs.setStickerDir(activity, data.data!!)
         } catch (e: SecurityException) {
             showStacktraceDialog(e)
             return
@@ -50,6 +50,7 @@ class SettingsFragment : PreferenceFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Prefs.initStickerSortOrder(activity)
         addPreferencesFromResource(R.xml.settings)
 
         findPreference("pref_import_stickers").setOnPreferenceClickListener {
@@ -151,10 +152,10 @@ class SettingsFragment : PreferenceFragment() {
     }
 
     private fun showTooManyStickersErrorDialog(e: TooManyStickersException) {
-        val userPath = if (e.path.isEmpty()) {
+        val userPath = if (e.path == "") {
             getString(R.string.too_many_stickers_dir_root)
         } else {
-            getString(R.string.too_many_stickers_dir_path, e.path.joinToString("/"))
+            getString(R.string.too_many_stickers_dir_path, e.path)
         }
         val message = getString(R.string.too_many_stickers_fmt, e.limit, e.count, userPath)
         AlertDialog.Builder(activity)
@@ -219,7 +220,7 @@ class SettingsFragment : PreferenceFragment() {
     private fun selectStickerDir() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val stickerDir = StickerDir.get(activity)
+            val stickerDir = Prefs.getStickerDir(activity)
             if (stickerDir != null) {
                 intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, stickerDir)
             }
@@ -232,8 +233,17 @@ class SettingsFragment : PreferenceFragment() {
         }
     }
 
+    private fun sortStickers(packs: List<StickerPack>): List<StickerPack> {
+        return when (Prefs.getStickerSortOrder(activity) ?: StickerSortOrder.NONE) {
+            StickerSortOrder.NONE -> packs
+            StickerSortOrder.ALPHABETICAL -> packs.sortedBy { pack -> pack.path }.map { pack ->
+                StickerPack(pack.path, pack.stickers.sortedBy { sticker -> sticker.name })
+            }
+        }
+    }
+
     private fun importStickers() {
-        val stickerDir = StickerDir.get(activity)
+        val stickerDir = Prefs.getStickerDir(activity)
         if (stickerDir == null) {
             Klog.i("Sticker directory not configured")
             onNeedInitStickerDir()
@@ -250,7 +260,7 @@ class SettingsFragment : PreferenceFragment() {
         StickerScanner(activity.contentResolver).executeWithCallback(stickerDir) { scanResult ->
             when (scanResult) {
                 is Result.Err -> onImportFailed(dialog, scanResult.err)
-                is Result.Ok -> FirebaseIndexUpdater().executeWithCallback(scanResult.value) { updateResult ->
+                is Result.Ok -> FirebaseIndexUpdater().executeWithCallback(sortStickers(scanResult.value)) { updateResult ->
                     when (updateResult) {
                         is Result.Err -> onImportFailed(dialog, updateResult.err)
                         is Result.Ok -> onImportSuccess(dialog, scanResult.value.sumBy { it.stickers.size })

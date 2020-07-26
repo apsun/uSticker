@@ -2,22 +2,28 @@ package com.crossbowffs.usticker
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.preference.PreferenceManager
+import java.lang.IllegalArgumentException
 
 /**
- * Manages the sticker directory preference. Also responsible for taking
- * persistent permissions when necessary.
+ * Manages app preferences, with a touch of business logic.
  */
-object StickerDir {
+object Prefs {
     private const val PREF_STICKER_DIR_URI = "pref_sticker_dir_uri"
+    private const val PREF_STICKER_SORT_ORDER = "pref_sticker_sort_order"
+
+    private fun getSharedPrefs(context: Context): SharedPreferences {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+    }
 
     /**
      * Returns the current configured sticker directory, or null if no
      * directory is set.
      */
-    fun get(context: Context): Uri? {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+    fun getStickerDir(context: Context): Uri? {
+        val prefs = getSharedPrefs(context)
         val stickerDir = prefs.getString(PREF_STICKER_DIR_URI, null) ?: return null
         return Uri.parse(stickerDir)
     }
@@ -29,9 +35,9 @@ object StickerDir {
      *
      * @throws SecurityException if takePersistableUriPermission() fails
      */
-    fun set(context: Context, stickerDir: Uri) {
+    fun setStickerDir(context: Context, stickerDir: Uri) {
         val resolver = context.contentResolver
-        val origStickerDir = get(context)
+        val origStickerDir = getStickerDir(context)
 
         // Release original URI, but only if it changed. Apparently releasing
         // a URI and then taking it again will fail.
@@ -44,7 +50,7 @@ object StickerDir {
             }
         }
 
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        val prefs = getSharedPrefs(context)
         try {
             resolver.takePersistableUriPermission(stickerDir, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         } catch (e: SecurityException) {
@@ -55,5 +61,32 @@ object StickerDir {
 
         prefs.edit().putString(PREF_STICKER_DIR_URI, stickerDir.toString()).apply()
         Klog.i("Set sticker dir -> $stickerDir")
+    }
+
+    /**
+     * Returns the currently selected sticker sort order, or null if
+     * no sorting order has been selected.
+     */
+    fun getStickerSortOrder(context: Context): StickerSortOrder? {
+        val prefs = getSharedPrefs(context)
+        val key = prefs.getString(PREF_STICKER_SORT_ORDER, null) ?: return null
+        return try {
+            StickerSortOrder.valueOf(key)
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+    }
+
+    /**
+     * If no sticker sort order has been selected, initializes it to
+     * the default sorting order.
+     *
+     * TODO: We should change the default to alphabetical sometime in the future.
+     */
+    fun initStickerSortOrder(context: Context) {
+        if (getStickerSortOrder(context) == null) {
+            val prefs = getSharedPrefs(context)
+            prefs.edit().putString(PREF_STICKER_SORT_ORDER, StickerSortOrder.NONE.name).apply()
+        }
     }
 }

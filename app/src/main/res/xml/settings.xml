@@ -10,6 +10,12 @@
             android:key="pref_change_sticker_dir"
             android:title="@string/change_sticker_dir"
             android:summary="@string/change_sticker_dir_summary"/>
+        <ListPreference
+            android:key="pref_sticker_sort_order"
+            android:title="@string/sticker_sort_order"
+            android:summary="%s"
+            android:entries="@array/pref_sticker_sort_order_entries"
+            android:entryValues="@array/pref_sticker_sort_order_values"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/about">
         <Preference

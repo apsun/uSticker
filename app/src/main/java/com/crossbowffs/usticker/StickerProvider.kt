@@ -15,7 +15,7 @@ class StickerProvider : ContentProvider() {
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {
         val path = uri.lastPathSegment ?: throw FileNotFoundException("Invalid URI: $uri")
         Klog.i("Requesting sticker: $path")
-        val stickerDir = StickerDir.get(context!!) ?: throw FileNotFoundException("Sticker directory not set")
+        val stickerDir = Prefs.getStickerDir(context!!) ?: throw FileNotFoundException("Sticker directory not set")
         val fileUri = DocumentsContract.buildDocumentUriUsingTree(stickerDir, path)
         try {
             return context!!.contentResolver.openFileDescriptor(fileUri, mode)

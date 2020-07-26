@@ -67,9 +67,6 @@ class StickerScanner(private val resolver: ContentResolver) : FailableAsyncTask<
         traverseDirectory(arg, mutableListOf(), rootDocumentId) { packPath, sticker ->
             stickerMap.getOrPut(packPath.joinToString("/"), ::mutableListOf).add(sticker)
         }
-        return stickerMap.map { entry ->
-            val packPath = if (entry.key == "") { emptyList() } else { entry.key.split('/') }
-            StickerPack(packPath, entry.value)
-        }
+        return stickerMap.map { entry -> StickerPack(entry.key, entry.value) }
     }
 }

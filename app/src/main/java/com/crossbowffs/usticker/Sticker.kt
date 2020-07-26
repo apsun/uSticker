@@ -6,7 +6,7 @@ import android.net.Uri
  * Represents a sticker file with an associated URI and filesystem name.
  */
 class Sticker(
-    val documentId: String,
+    private val documentId: String,
     val name: String)
 {
     /**

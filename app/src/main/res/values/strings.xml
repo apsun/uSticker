@@ -27,6 +27,10 @@
     <string name="changelog">Changelog</string>
     <string name="changelog_text">
         <![CDATA[
+            <big><b>1.6.0</b></big><br>
+            Added an option to sort stickers by alphabetical order.
+            <br><br>
+
             <big><b>1.5.4</b></big><br>
             Gboard now limits you to 100 stickers per pack, so added a
             validation check for that. Also removed the bug report
@@ -107,6 +111,9 @@
     </string>
     <string name="change_sticker_dir">Change sticker directory</string>
     <string name="change_sticker_dir_summary">Select a new directory to search for stickers</string>
+    <string name="sticker_sort_order">Change sticker sort order</string>
+    <string name="sticker_sort_order_none">None</string>
+    <string name="sticker_sort_order_alphabetical">Alphabetical</string>
     <string name="init_sticker_dir">Please select the directory containing your stickers</string>
     <string name="failed_to_obtain_read_permissions">Failed to obtain read permissions</string>
     <string name="cannot_find_file_browser">

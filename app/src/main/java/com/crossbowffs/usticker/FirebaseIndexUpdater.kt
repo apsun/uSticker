@@ -49,9 +49,10 @@ class FirebaseIndexUpdater {
      */
     private fun stickerPacksToIndexables(stickerPacks: List<StickerPack>): List<Indexable> {
         return stickerPacks.flatMap { stickerPack ->
-            val packName = stickerPack.path.lastOrNull() ?: "Stickers"
+            val packPath = if (stickerPack.path == "") { emptyList() } else { stickerPack.path.split('/') }
+            val packName = packPath.lastOrNull() ?: "Stickers"
             val packUri = stickerPack.getFirebaseUri()
-            val packKeywords = stickerPack.path.flatMap(this::getKeywords)
+            val packKeywords = packPath.flatMap(this::getKeywords)
             val stickerCount = stickerPack.stickers.size
             if (stickerCount > MAX_STICKERS_PER_PACK) {
                 throw TooManyStickersException(stickerCount, MAX_STICKERS_PER_PACK, stickerPack.path)
