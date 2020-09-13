@@ -195,11 +195,6 @@ class SettingsFragment : PreferenceFragment() {
         Toast.makeText(activity, message, Toast.LENGTH_SHORT).show()
     }
 
-    private fun onNeedInitStickerDir() {
-        Toast.makeText(activity, R.string.init_sticker_dir, Toast.LENGTH_SHORT).show()
-        selectStickerDir()
-    }
-
     private fun onImportFailed(dialog: Dialog, err: Exception) {
         Klog.e("Failed to import stickers", err)
         dismissDialog(dialog)
@@ -209,8 +204,12 @@ class SettingsFragment : PreferenceFragment() {
             return
         }
 
-        if (err is SecurityException) {
-            onNeedInitStickerDir()
+        if (err is SecurityException ||
+            err is IllegalStateException ||
+            err is IllegalArgumentException)
+        {
+            Toast.makeText(activity, R.string.sticker_dir_invalid, Toast.LENGTH_SHORT).show()
+            selectStickerDir()
             return
         }
 
@@ -246,7 +245,7 @@ class SettingsFragment : PreferenceFragment() {
         val stickerDir = Prefs.getStickerDir(activity)
         if (stickerDir == null) {
             Klog.i("Sticker directory not configured")
-            onNeedInitStickerDir()
+            selectStickerDir()
             return
         }
 

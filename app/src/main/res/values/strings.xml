@@ -114,7 +114,7 @@
     <string name="sticker_sort_order">Change sticker sort order</string>
     <string name="sticker_sort_order_none">None</string>
     <string name="sticker_sort_order_alphabetical">Alphabetical</string>
-    <string name="init_sticker_dir">Please select the directory containing your stickers</string>
+    <string name="sticker_dir_invalid">Could not read stickers; please re-select the sticker directory</string>
     <string name="failed_to_obtain_read_permissions">Failed to obtain read permissions</string>
     <string name="cannot_find_file_browser">
         Cannot find an app that supports ACTION_OPEN_DOCUMENT_TREE. If you disabled the
