@@ -16,6 +16,17 @@ feature requests.
 3. ???
 4. Profit!
 
+## Known issues
+
+If you get the message "Something went wrong" when trying to send a sticker
+in Gboard, try opening the uSticker app (you don't need to re-import, just
+opening the app should be sufficient). I believe this has to do with
+something about content providers and reboots. Android 11 has been a
+complete dumpster fire.
+
+If you get any other errors, please submit a bug report and attach a logcat
+dump.
+
 ## FAQ
 
 ### Why does this even exist?
