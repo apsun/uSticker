@@ -9,6 +9,17 @@ determined by my own needs. I make this app public only in the hopes
 that you share my use-case and find it useful; please do not submit
 feature requests.
 
+## Announcement
+
+Shameless self promotion: Love using uSticker, but switched to an iPhone?
+Try [Stickerboard](https://github.com/apsun/Stickerboard)! It's got the
+same great feature set, for the same great price of $0.00!
+
+uSticker will continue to be maintained for the foreseeable future, but
+don't expect me to spend too much time investigating issues. If you submit
+an issue, please search to see if it's one of the dozens of known Gboard
+bugs first.
+
 ## Usage
 
 1. Save stickers to your phone's storage
