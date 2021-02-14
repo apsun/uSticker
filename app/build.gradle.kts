@@ -21,11 +21,11 @@ android {
     }
 
     buildTypes {
-        create("debug") {
+        getByName("debug") {
             buildConfigField("int", "LOG_LEVEL", "2")
         }
 
-        create("release")  {
+        getByName("release") {
             postprocessing {
                 isRemoveUnusedCode = true
                 isRemoveUnusedResources = true
