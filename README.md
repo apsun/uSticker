@@ -1,5 +1,11 @@
 # uSticker
 
+**NOTICE**: uSticker is incompatible with Gboard 10.2 and above. If you
+want to continue using uSticker for the time being until an alternative
+is available, please downgrade Gboard to 10.1
+([APKMirror link](https://www.apkmirror.com/apk/google-inc/gboard/gboard-10-1-04-342850159-release/)).
+See [#49](https://github.com/apsun/uSticker/issues/49) for more info.
+
 uSticker is a local-storage sticker provider for Gboard. Want to save all
 your stickers locally, but don't want to search for them in your gallery?
 uSticker lets you access them directly inside Gboard!
