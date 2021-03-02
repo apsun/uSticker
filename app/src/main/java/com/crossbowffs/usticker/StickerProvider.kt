@@ -8,8 +8,8 @@ import android.provider.DocumentsContract
 import java.io.FileNotFoundException
 
 /**
- * Provides sticker files to the Firebase indexing service.
- * Only supports reading files via openFile().
+ * Provides sticker files to the app. Only supports reading
+ * files via openFile().
  */
 class StickerProvider : ContentProvider() {
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {

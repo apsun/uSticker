@@ -3,18 +3,29 @@
     <string name="app_name">uSticker</string>
     <string name="got_it">Got it!</string>
     <string name="actions">Actions</string>
+    <string name="settings">Settings</string>
     <string name="about">About</string>
     <string name="close">Close</string>
+    <string name="ignore">Ignore</string>
+    <string name="open_settings">Open settings</string>
     <string name="report">Report bug</string>
     <string name="help">Help</string>
     <string name="github">GitHub</string>
     <string name="version">Version</string>
+    <string name="enable_keyboard_title">Enable keyboard</string>
+    <string name="enable_keyboard_message">
+        Starting in version 2.0, uSticker now comes with a standalone
+        keyboard. In order to use uSticker, please enable the keyboard
+        in the system settings.\n\n(For uSticker 1.x users, Google
+        removed custom sticker support in Gboard 10.2, so we were forced
+        to create our own keyboard. Sorry for the inconvenience.)
+    </string>
     <string name="help_summary">View app usage instructions</string>
     <string name="help_text">
         <![CDATA[
             Copy your images to the configured storage location,
-            then press the import stickers button. Your images will show
-            up in the Gboard sticker list.<br><br>
+            then press the import stickers button. Your images will then
+            show up in the keyboard.<br><br>
 
             Have too many stickers to scroll through? Put your stickers
             in sub-directories, and we\'ll generate a new sticker tab for
@@ -27,6 +38,11 @@
     <string name="changelog">Changelog</string>
     <string name="changelog_text">
         <![CDATA[
+            <big><b>2.0.0</b></big><br>
+            uSticker now comes with its own keyboard. Removed Gboard
+            support and Firebase dependencies.
+            <br><br>
+
             <big><b>1.6.0</b></big><br>
             Added an option to sort stickers by alphabetical order.
             <br><br>
@@ -100,9 +116,9 @@
         ]]>
     </string>
     <string name="github_summary">github.com/apsun/uSticker</string>
-    <string name="import_stickers">Import stickers to Gboard</string>
-    <string name="import_stickers_summary">Press after adding stickers or changing settings</string>
-    <string name="importing_stickers">Importing stickers to Gboard…</string>
+    <string name="import_stickers">Import stickers</string>
+    <string name="import_stickers_summary">Press after adding or removing stickers</string>
+    <string name="importing_stickers">Importing stickers…</string>
     <string name="import_success_toast">Successfully imported %1$d sticker(s)</string>
     <string name="import_failed_title">Import failed</string>
     <string name="import_failed_message">
@@ -111,9 +127,8 @@
     </string>
     <string name="change_sticker_dir">Change sticker directory</string>
     <string name="change_sticker_dir_summary">Select a new directory to search for stickers</string>
-    <string name="sticker_sort_order">Change sticker sort order</string>
-    <string name="sticker_sort_order_none">None</string>
-    <string name="sticker_sort_order_alphabetical">Alphabetical</string>
+    <string name="auto_switch_keyboard">Auto switch keyboard</string>
+    <string name="auto_switch_keyboard_summary">Switch back to the previous keyboard after selecting a sticker</string>
     <string name="sticker_dir_invalid">Could not read stickers; please re-select the sticker directory</string>
     <string name="failed_to_obtain_read_permissions">Failed to obtain read permissions</string>
     <string name="cannot_find_file_browser">
@@ -122,22 +137,13 @@
     </string>
     <string name="issue_template">
         uSticker version: %1$s
-        \nGboard version: %2$s
-        \nAndroid version: %3$s
+        \nAndroid version: %2$s
     </string>
     <string name="issue_template_stacktrace">
         uSticker version: %1$s
-        \nGboard version: %2$s
-        \nAndroid version: %3$s
+        \nAndroid version: %2$s
         \nException stacktrace:
-        \n```\n%4$s```
+        \n```\n%3$s```
     </string>
     <string name="issue_template_copied">Details copied to clipboard. Please submit an issue on GitHub.</string>
-    <string name="too_many_stickers_fmt">
-        Only %1$d stickers per pack are supported by Gboard. You have
-        %2$d stickers in %3$s. Please move some of your stickers to
-        subdirectories to create new sticker packs.
-    </string>
-    <string name="too_many_stickers_dir_root">the root sticker directory</string>
-    <string name="too_many_stickers_dir_path">the directory \'%1$s\'</string>
 </resources>

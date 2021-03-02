@@ -51,7 +51,7 @@ class StickerScanner(private val resolver: ContentResolver) : FailableAsyncTask<
                     traverseDirectory(rootDir, packPath, documentId, cb)
                     packPath.removeAt(packPath.lastIndex)
                 } else if (mimeType in STICKER_MIME_TYPES) {
-                    cb(packPath.toTypedArray(), Sticker(documentId, name))
+                    cb(packPath.toTypedArray(), Sticker(documentId, name, mimeType))
                 }
             }
         }
@@ -59,7 +59,7 @@ class StickerScanner(private val resolver: ContentResolver) : FailableAsyncTask<
 
     /**
      * Returns a collection of sticker packs. Each sticker pack is guaranteed
-     * to have at least one file. The ordering is not guaranteed, however.
+     * to have at least one file, and is sorted in alphabetical order.
      */
     override fun run(arg: Uri): List<StickerPack> {
         val rootDocumentId = DocumentsContract.getTreeDocumentId(arg)
@@ -67,6 +67,12 @@ class StickerScanner(private val resolver: ContentResolver) : FailableAsyncTask<
         traverseDirectory(arg, mutableListOf(), rootDocumentId) { packPath, sticker ->
             stickerMap.getOrPut(packPath.joinToString("/"), ::mutableListOf).add(sticker)
         }
-        return stickerMap.map { entry -> StickerPack(entry.key, entry.value) }
+        return stickerMap
+            .map { (packPath, stickers) ->
+                StickerPack(
+                    packPath,
+                    stickers.sortedBy { sticker -> sticker.name }
+                )
+            }.sortedBy { stickerPack -> stickerPack.path }
     }
 }

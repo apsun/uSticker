@@ -5,14 +5,13 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.preference.PreferenceManager
-import java.lang.IllegalArgumentException
 
 /**
  * Manages app preferences, with a touch of business logic.
  */
 object Prefs {
     private const val PREF_STICKER_DIR_URI = "pref_sticker_dir_uri"
-    private const val PREF_STICKER_SORT_ORDER = "pref_sticker_sort_order"
+    private const val PREF_AUTO_SWITCH_KEYBOARD = "pref_auto_switch_keyboard"
 
     private fun getSharedPrefs(context: Context): SharedPreferences {
         return PreferenceManager.getDefaultSharedPreferences(context)
@@ -64,29 +63,11 @@ object Prefs {
     }
 
     /**
-     * Returns the currently selected sticker sort order, or null if
-     * no sorting order has been selected.
+     * Returns whether the user has configured the keyboard to automatically
+     * switch after selecting a sticker.
      */
-    fun getStickerSortOrder(context: Context): StickerSortOrder? {
+    fun isAutoSwitchKeyboard(context: Context): Boolean {
         val prefs = getSharedPrefs(context)
-        val key = prefs.getString(PREF_STICKER_SORT_ORDER, null) ?: return null
-        return try {
-            StickerSortOrder.valueOf(key)
-        } catch (e: IllegalArgumentException) {
-            null
-        }
-    }
-
-    /**
-     * If no sticker sort order has been selected, initializes it to
-     * the default sorting order.
-     *
-     * TODO: We should change the default to alphabetical sometime in the future.
-     */
-    fun initStickerSortOrder(context: Context) {
-        if (getStickerSortOrder(context) == null) {
-            val prefs = getSharedPrefs(context)
-            prefs.edit().putString(PREF_STICKER_SORT_ORDER, StickerSortOrder.NONE.name).apply()
-        }
+        return prefs.getBoolean(PREF_AUTO_SWITCH_KEYBOARD, false)
     }
 }

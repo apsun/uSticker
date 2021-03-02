@@ -5,14 +5,15 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.*
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceFragment
 import android.provider.DocumentsContract
+import android.provider.Settings
 import android.text.Html
 import android.util.Log
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 
 class SettingsFragment : PreferenceFragment() {
@@ -50,7 +51,6 @@ class SettingsFragment : PreferenceFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Prefs.initStickerSortOrder(activity)
         addPreferencesFromResource(R.xml.settings)
 
         findPreference("pref_import_stickers").setOnPreferenceClickListener {
@@ -80,31 +80,38 @@ class SettingsFragment : PreferenceFragment() {
                 true
             }
         }
+
+        if (!isKeyboardEnabled()) {
+            showEnableKeyboardDialog()
+        }
+    }
+
+    private fun isKeyboardEnabled(): Boolean {
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val component = ComponentName(context, StickerInputMethodService::class.java)
+        return imm.enabledInputMethodList.any {
+            it.component == component
+        }
     }
 
     private fun getAppVersion(): String {
         return "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
     }
 
-    private fun getGboardVersion(): String? {
-        val pkg = try {
-            activity.packageManager.getPackageInfo("com.google.android.inputmethod.latin", 0)
-        } catch (e: PackageManager.NameNotFoundException) {
-            return null
-        }
-        return "${pkg.versionName} (${pkg.versionCode})"
-    }
-
     private fun getIssueTemplate(stacktrace: String?): String {
         val appVersion = getAppVersion()
-        val gboardVersion = getGboardVersion() ?: "N/A"
         val osVersion = "${Build.VERSION.RELEASE} (API${Build.VERSION.SDK_INT})"
         val fmt = if (stacktrace == null) {
             R.string.issue_template
         } else {
             R.string.issue_template_stacktrace
         }
-        return getString(fmt, appVersion, gboardVersion, osVersion, stacktrace)
+        return getString(fmt, appVersion, osVersion, stacktrace)
+    }
+
+    private fun startInputMethodSettingsActivity() {
+        val enableIntent = Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)
+        startActivity(enableIntent)
     }
 
     private fun startBrowserActivity(url: String) {
@@ -132,6 +139,18 @@ class SettingsFragment : PreferenceFragment() {
         return Html.fromHtml(getString(resId))
     }
 
+    private fun showEnableKeyboardDialog() {
+        AlertDialog.Builder(activity)
+            .setTitle(R.string.enable_keyboard_title)
+            .setMessage(R.string.enable_keyboard_message)
+            .setPositiveButton(R.string.open_settings) { _, _ ->
+                startInputMethodSettingsActivity()
+            }
+            .setNeutralButton(R.string.ignore, null)
+            .setCancelable(false)
+            .show()
+    }
+
     private fun showHelpDialog() {
         AlertDialog.Builder(activity)
             .setTitle(R.string.help)
@@ -147,20 +166,6 @@ class SettingsFragment : PreferenceFragment() {
         AlertDialog.Builder(activity)
             .setTitle(R.string.changelog)
             .setMessage(getHtmlString(R.string.changelog_text))
-            .setPositiveButton(R.string.close, null)
-            .show()
-    }
-
-    private fun showTooManyStickersErrorDialog(e: TooManyStickersException) {
-        val userPath = if (e.path == "") {
-            getString(R.string.too_many_stickers_dir_root)
-        } else {
-            getString(R.string.too_many_stickers_dir_path, e.path)
-        }
-        val message = getString(R.string.too_many_stickers_fmt, e.limit, e.count, userPath)
-        AlertDialog.Builder(activity)
-            .setTitle(R.string.import_failed_title)
-            .setMessage(message)
             .setPositiveButton(R.string.close, null)
             .show()
     }
@@ -199,11 +204,6 @@ class SettingsFragment : PreferenceFragment() {
         Klog.e("Failed to import stickers", err)
         dismissDialog(dialog)
 
-        if (err is TooManyStickersException) {
-            showTooManyStickersErrorDialog(err)
-            return
-        }
-
         if (err is SecurityException ||
             err is IllegalStateException ||
             err is IllegalArgumentException)
@@ -232,15 +232,6 @@ class SettingsFragment : PreferenceFragment() {
         }
     }
 
-    private fun sortStickers(packs: List<StickerPack>): List<StickerPack> {
-        return when (Prefs.getStickerSortOrder(activity) ?: StickerSortOrder.NONE) {
-            StickerSortOrder.NONE -> packs
-            StickerSortOrder.ALPHABETICAL -> packs.sortedBy { pack -> pack.path }.map { pack ->
-                StickerPack(pack.path, pack.stickers.sortedBy { sticker -> sticker.name })
-            }
-        }
-    }
-
     private fun importStickers() {
         val stickerDir = Prefs.getStickerDir(activity)
         if (stickerDir == null) {
@@ -259,10 +250,10 @@ class SettingsFragment : PreferenceFragment() {
         StickerScanner(activity.contentResolver).executeWithCallback(stickerDir) { scanResult ->
             when (scanResult) {
                 is Result.Err -> onImportFailed(dialog, scanResult.err)
-                is Result.Ok -> FirebaseIndexUpdater().executeWithCallback(sortStickers(scanResult.value)) { updateResult ->
+                is Result.Ok -> StickerImporter().executeWithCallback(scanResult.value) { updateResult ->
                     when (updateResult) {
                         is Result.Err -> onImportFailed(dialog, updateResult.err)
-                        is Result.Ok -> onImportSuccess(dialog, scanResult.value.sumBy { it.stickers.size })
+                        is Result.Ok -> onImportSuccess(dialog, updateResult.value)
                     }
                 }
             }
