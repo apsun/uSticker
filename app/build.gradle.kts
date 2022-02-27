@@ -4,17 +4,17 @@ plugins {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.4.30")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.5.21")
 }
 
 android {
-    compileSdkVersion(30)
+    compileSdk = 31
 
     defaultConfig {
-        minSdkVersion(25)
-        targetSdkVersion(30)
-        versionCode(17)
-        versionName("2.0.0-dev")
+        minSdk = 25
+        targetSdk = 31
+        versionCode = 17
+        versionName = "2.0.0-dev"
         buildConfigField("String", "LOG_TAG", "\"uSticker\"")
     }
 
@@ -32,9 +32,5 @@ android {
             }
             buildConfigField("int", "LOG_LEVEL", "4")
         }
-    }
-
-    lintOptions {
-        isAbortOnError = false
     }
 }
