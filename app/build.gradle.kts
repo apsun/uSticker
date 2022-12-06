@@ -4,15 +4,15 @@ plugins {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.5.21")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.7.10")
 }
 
 android {
-    compileSdk = 31
+    compileSdk = 33
 
     defaultConfig {
         minSdk = 25
-        targetSdk = 31
+        targetSdk = 33
         versionCode = 17
         versionName = "2.0.0-dev"
         buildConfigField("String", "LOG_TAG", "\"uSticker\"")
