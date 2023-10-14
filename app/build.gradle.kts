@@ -4,15 +4,16 @@ plugins {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.7.10")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.10")
 }
 
 android {
-    compileSdk = 33
+    namespace = "com.crossbowffs.usticker"
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 25
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 17
         versionName = "2.0.0-dev"
         buildConfigField("String", "LOG_TAG", "\"uSticker\"")
